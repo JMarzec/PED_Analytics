@@ -1,0 +1,283 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Pancreatic Expression Database</title>
+<link rev="made" href="mailto:Claude.Chelala%40cancer.org.uk" />
+<meta name="keywords" content="snp" />
+<meta name="copyright" content="Centre for Molecular Oncology, Institute of cancer" />
+<link rel="stylesheet" type="text/css" href="styles/pedstyle.css" />
+<script language="javascript" type="text/javascript" src="/js/platform_options.js"></script>
+<script language="javascript" type="text/javascript" src="/js/landscape_comparisons.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+
+<script>
+    $(document).ready(function() {
+        load_comp();
+	$("#functionCategory").change(function(){
+		var data=$("#functionCategory").val();
+		if(data==="0"){
+			$("#functionOption").hide();
+		}
+		else{
+			$("#functionOption").show();
+
+		}
+	});
+	$("#canonicalCategory").change(function(){
+		var data=$("#canonicalCategory").val();
+		if(data==="0"){
+			$("#canonicalOption").hide();
+		}
+		else{
+			$("#canonicalOption").show();
+
+		}
+	});
+	$("#landscapeform").submit(function(event){
+		event.preventDefault();
+		var formData = new FormData(this);
+		fc  = $("#logfoldchange").val();
+		pval= $("#pvalue").val();
+		comp= $("#compType").val();
+		if((fc!=="0" || pval !=="1") && comp==="0"){
+		    alert("Please pick a comparison to apply fold-change or p-value threshold!");
+		    return false;
+		}
+		$.ajax({
+		    url: '/cgi-bin/pancexp/landscape/landscape.pl',  //server script to process data
+		    type: 'POST',
+		    dataType: "html",
+		    data: formData,
+		    async: true,
+		    success: function(res) {
+			$("#snpalizer-content").html(res);
+			clean_tsv = cleanResult(res);
+			$("#export_tsv").attr("href",'data:text;charset=utf-8,'+encodeURIComponent(clean_tsv));
+			$("table#result-table tr:even").css("background-color","#dfdfdf");
+			},
+		    failure: function(data) {
+			    alert("An error occured while retrieving your result!");
+			    $("#invalid_email").html(
+				"The following error occured: "+data);
+			    },
+		    // Form data
+		    //Options to tell JQuery not to process data or worry about content-type
+		    cache: false,
+		    contentType: false,
+		    processData: false
+		});
+		$("#snpalizer-content").html("<p class='statement'>Waiting for results . . .</p>");
+	});
+	function cleanResult(res)
+		{
+		var TableArray = document.getElementsByName('result-table');
+		var content = "";
+		for (var i = 0; i < TableArray.length; i++){
+				var oTable = TableArray[i];
+				if(i==0){
+					content += "###Expression Landscape Data \n\n";	
+				}
+				var rowLength = oTable.rows.length;
+				//gets rows of table
+			    
+				for (var j = 0; j < rowLength; j++){
+				//loops through rows
+			    
+				   var oCells = oTable.rows.item(j).cells;
+				   //gets cells of current row
+				   var cellLength = oCells.length;
+				       for(var k = 0; k < cellLength - 1; k++){
+				       //loops through each cell in current row
+					  <!--get your cell info here-->
+					  var oCell = oCells.item(k);
+					  var cellVal = oCell.innerHTML;
+					  content += cellVal+"\t";
+				       }
+				       content +="\n";
+				}
+				content +="\n\n";
+		}
+		return content;
+		}
+    });
+
+</script>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+</head>
+
+<body >
+        <div id="biomart-top-wrapper">  
+            <div id="snpalizer-header">
+		    <div id="snpalizer-header-2">
+		    <div class="wrapper" >
+                                <div id="header"> 
+                                <div id="toolbar"> 						
+						<div class="right"> 
+                                                                <div class="module    first last"> 		
+                                                                <a target="_blank" href="http://www.smd.qmul.ac.uk/"><img title="Barts and the London" alt="barts-and-london_sml" src="images/barts-and-london_sml.png" style="border:0"/></a>		
+                                                                </div>
+                                                </div> 
+					
+				</div> 
+					
+				<div id="headermid"> 		
+						<div id="logo"> 
+							<p><img src="images/ped_logo.png" alt="Pancreatic expression database" title="Pancreatic expression database" style="width:295px;height:144px;border:0"/></p>
+                                                </div>
+                                                <div id="banner">
+                                                        <p><img src="images/bci_logo.png" alt="Barts Cancer Institute" title="Barts Cancer Institute" style="border:0"></p>       
+                                                </div>
+                                </div>
+                                </div>
+		    </div>
+                </div>
+		    </div>
+                <ul id="snpalizer-nav-list">
+    <li><a href="http://www.pancreasexpression.org/">Home</a></li>
+    <li><a href="http://www.analytics.pancreasexpression.org/pages/" target="_blank">Analytics</a></li>
+	<li><a href="/includes/PancreaticCancerLandscape.html" target="_blank" >Expression Landscape</a></li>
+	<li><a href="/includes/help.html" target="_blank">User Guide</a></li>
+	<li><a href="/includes/query_examples.html" target="_blank">Examples</a></li>
+	<li><a href="mailto:help@pancreasexpression.org.uk">Contact</a></li>
+  </ul>
+                <div id="snpalizer-middle-two">
+                      
+                        <div id="home-content">
+				
+
+<div id="message-home" >
+    <div class="section-header">
+		<p class="intro"><b>Pancreatic Expression Landscape </b>
+		</p>
+    </div>
+    <div class="elinput" >
+	<div class="leftelinput" style="width:500px">
+		<span>
+		We conducted a comprehensive meta-analysis of pancreatic cancer-expression space by integrating data from otherwise disparate studies.
+                Currently, the most comprehensive analysis of pancreatic cancer to date, our study primarily serves to highlight limitations inherent with a lack of raw data availability,
+                insufficient clinical/histopathological information and ambiguous data processing.
+                It stresses the importance of a global-systems approach to assess and maximise findings from expression profiling of malignant and non-malignant diseases.The results of this meta-analysis are freely available and can be queried and visualised below.
+		
+		<p>When you use this resource, please cite:
+		<br><br>
+<b>[1]</b> Emanuela Gadaleta, Rosalind J. Cutts, Gavin P. Kelly, Tatjana Crnogorac-Jurcevic, Hemant M. Kocher, Nicholas R. Lemoine and Claude Chelala</i>, A global insight into a cancer transcriptional space using pancreatic data: importance, findings and flaws. <i>Nucleic Acids Research</i>, 2011, 39(18):7900-7. <a class="export_pdf" href="http://nar.oxfordjournals.org/content/early/2011/06/30/nar.gkr533.full.pdf+html">PDF</a>
+		
+	</div>
+		<div class="stat-box" style="width:320px">
+		    <div style="margin:10px;">
+			<b>Platform</b>: Affymetrix HG U133 Plus 2.0 array <br>
+			<b>Transcript analysed</b>: 47000 <br>
+			<b>Final dataset</b>: 257 <br>
+			<b>Normal pancreas</b>: 4<br>
+			<b>Normal pancreas adjacent to cancer</b>: 53<br>
+			<b>Pancreatic cancer including PDAC</b>: 96<br>
+			<b>Pancreatic cancer cell lines</b>: 47<br>
+			<b>Ectopic subcutaneous xenografts</b>: 57<br>
+		</div>
+	    </div>
+		
+	</div>	
+	
+    </div>
+</div>
+
+<form id="landscapeform" name="landscapeform" method="post" >
+
+<div id="article-home">
+		<div class="section-header" style="padding-top:10px;">
+		    
+		</div>
+		<div class="elinput">
+				<!--<select class="shortfield" id="queryType" name="queryType" >
+						<option value="Affy" selected>Affy U133 Plus 2 Probe IDs</option>
+						<option value="HGNC">HGNC Gene Symbols</option>
+				</select>-->
+				<div class="leftelinput">
+				<textarea class="shortfield" id="probe" name="probe" placeholder="Affy U133 Plus 2 probes or HGNC genes (eg., S100P, 203473_at)"></textarea>
+				</div>
+				<div class="rightelinput">
+				<select class="shortfield" id="compType" name="compType" >
+						<option value="0">Pick Comparison...</option>
+				</select>
+				<select class="veryshortfield" id="logfoldchange" name="logfoldchange" >
+						<option value="0" selected>Set Log Fold-change</option>
+						<option value="2" >2</option>
+						<option value="3" >3</option>
+						<option value="4" >4</option>
+				    </select>
+				<select class="veryshortfield" id="pvalue" name="pvalue" >
+						<option value="1" selected>Set P-value</option>
+						<option value="0.05" >&lt;0.05</option>
+						<option value="0.01" >&lt;0.01</option>
+						<option value="0.005">&lt;0.005</option>
+				    </select>
+				</div>
+				<div class="clear"></div>
+				
+		</div>
+		<div class="elinput">
+		    <div class="leftelinput">
+				<select class="shortfield" id="functionCategory" name="functionCategory" onChange="redirect()">
+						<option value="DiseaseandDisorders">Diseases and Disorders</option>
+						<option value="Physio_System_Funct_Develop">Physiological System & Functional Development</option>
+						<option value="MolecularandCellularFunctions">Molecular and Cellular Functions</option>
+						<option value="0" selected>Pick Biological Function...</option>
+				</select>
+				<select class="shortfield" id="functionOption" name="functionOption" style="display: none">
+						<option value="0">Pick Category...</option>
+				    </select>
+		</div>
+		<div class="rightelinput">
+				<select class="shortfield" id="canonicalCategory" name="canonicalCategory" onChange="redirect1()">
+				    <option>Amino acid metabolism</option>
+				    <option>Apoptosis</option>
+				    <option>Cancer</option>
+				    <option>Carbohydrate metabolism</option>
+				    <option>Cell cycle regulation</option>
+				    <option>Cellular Immune response</option>
+				    <option>Cellular growth proliferation &amp; development</option>
+				    <option>Cellular stress &amp; injury</option>
+				    <option>Cytokine Signaling</option>
+				    <option>Disease-specific pathways</option>
+				    <option>Energy metabolism</option>
+				    <option>Growth factor Signaling</option>
+				    <option>Humoral immune response</option>
+				    <option>Ingenuity toxicology list pathways</option>
+				    <option>Intracellular and 2nd messenger Signaling</option>
+				    <option>Lipid metabolism</option>
+				    <option>Metabolis of complex lipids</option>
+				    <option>Metabolism of cofactors &amp; vitamins</option>
+				    <option>Metabolism of complex carbohydrates</option>
+				    <option>Neurotransmitters &amp; other NS Signaling</option>
+				    <option>Nuclear receptor Signaling</option>
+				    <option>Nucleotide metabolism</option>
+				    <option>Organismal growth &amp; development</option>
+				    <option>Pathogen-influenced Signaling</option>
+				    <option value="0" selected>Pick Canonical Pathway...</option>
+				</select>
+				    <select class="shortfield" id="canonicalOption" name="canonicalOption" style="display: none">
+						<option value="0">Pick Category...</option>
+				    </select>
+		</div>
+		<div class="clear"></div>
+		</div>
+		
+		<div class="elinput" style="text-align: center">
+				<div class="submit-wrapper"><input type="submit" value="Submit" ></div>
+				
+		</div>
+</div>
+</form>
+<div id="snpalizer-content">
+    </div>
+                        </div>
+			
+		<div id="snpalizer_bottom_bar" >
+			<span class="tab"><a href="http://www.pancreasexpression.org:9002/" target="_blank">View PED 3.0</a></span><span class="tab">Copyright &copy; 2008 Barts Cancer Institute</span>
+                </div>
+		<!-- footer END -->
+	</body>
+</html>
+
