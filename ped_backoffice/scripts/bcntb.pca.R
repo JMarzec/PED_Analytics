@@ -70,12 +70,12 @@ duplGenes <- function(expData) {
 
                 genesRepl[[ geneName ]] = genesRepl[[ geneName ]]+1
 
-                geneName <- paste(geneName, ".", genesRepl[[ geneName ]], sep="")
+                geneName <- paste(geneName, "-", genesRepl[[ geneName ]], sep="")
 
             } else {
                 genesRepl[[ geneName ]] <- 2
 
-                geneName <- paste(geneName, ".2", sep="")
+                geneName <- paste(geneName, "-2", sep="")
             }
         }
         genesList <- c(genesList,geneName)
@@ -143,22 +143,21 @@ for (j in 1:length(exp_files)) {
 
   selected_samples <- intersect(as.character(annData$File_name),colnames(expData))
   expData.subset <- as.data.frame(t(scale(t(data.matrix(expData[,colnames(expData) %in% selected_samples])))))
-  annData.subset <- annData[annData$File_name %in% selected_samples,]
-  
+
   #===============================================================================
   #     Principal components analysis
   #===============================================================================
 
+  ##### Keep only probes with variance > 0 across all samples
+  rsd <- apply(expData,1,sd)
+  expData <- expData.subset[rsd>0,]
+
   ##### Assign colours according to defined sample annotation
-  targets <- annData.subset[,target]
+  targets <- subset(annData, File_name %in% colnames(expData))[,target]
   targets.colour <- getTargetsColours(targets)
 
-  ##### Keep only probes with variance > 0 across all samples
-  rsd <- apply(expData.subset,1,sd)
-  expData.subset <- expData.subset[rsd>0,]
-
   ##### Perform principal components analysis
-  expData_pca <- prcomp(t(expData.subset), scale=FALSE)
+  expData_pca <- prcomp(t(expData), scale=FALSE)
 
   ##### Get variance importance for all principal components
   importance_pca <- summary(expData_pca)$importance[2,]
@@ -168,7 +167,6 @@ for (j in 1:length(exp_files)) {
   ##### Prepare data frame
   expData_pca.df <- data.frame(paste0("PC ", c(1:length(expData_pca$sdev))), expData_pca$sdev)
   colnames(expData_pca.df) <- c("PC", "Variances")
-
   ##### The default order will be alphabetized unless specified as below
   expData_pca.df$PC <- factor(expData_pca.df$PC, levels = expData_pca.df[["PC"]])
 
@@ -176,25 +174,31 @@ for (j in 1:length(exp_files)) {
   layout(title = "The variances captured by principal components", xaxis = list(title = ""), margin = list(l=50, r=50, b=100, t=100, pad=4), autosize = F)
 
   ##### Save the box-plot as html (PLOTLY)
-  htmlwidgets::saveWidget(as_widget(p), paste(outFolder,paste("pca_bp","_",j,".html",sep=""), sep = "/"))
+  widget_fn = paste(outFolder,paste0("pca_bp","_",j,".html"),sep="/")
+  htmlwidgets::saveWidget(p, file=widget_fn)
 
   ##### Generate PCA plot (PLOTLY)
   ##### Prepare data frame
+
   expData_pca.df <- data.frame(targets, expData_pca$x[,PC1], expData_pca$x[,PC2], expData_pca$x[,PC3])
-  print(nrow(expData_pca.df))
   colnames(expData_pca.df) <- c("Target", "PC1", "PC2", "PC3")
-  rownames(expData_pca.df) <- selected_samples
+  rownames(expData_pca.df) <- subset(annData, File_name %in% colnames(expData))[,"File_name"]
 
   p <- plot_ly(expData_pca.df, x = ~PC1, y = ~PC2, color = ~Target, text=rownames(expData_pca.df), colors = targets.colour[[1]], type='scatter', mode = "markers", marker = list(size=10, symbol="circle"), width = 800, height = 600) %>%
-  layout(title = "", xaxis = list(title = paste("PC ", PC1, " (",importance_pca[PC1],")",sep="")), yaxis = list(title = paste("PC ", PC2, " (",importance_pca[PC2],")",sep="")), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'v', y = 0.5), showlegend=TRUE)
+  layout(title = "", xaxis = list(title = paste("PC ", PC1, " (",importance_pca[PC1],")",sep="")), yaxis = list(title = paste("PC ", PC2, " (",importance_pca[PC2],")",sep="")), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'h', y = 1.1))
 
+  widget_fn = paste(outFolder,paste0("pca_2d","_",j,".html"),sep="/")
   ##### Save the box-plot as html (PLOTLY)
-  htmlwidgets::saveWidget(as_widget(p), paste(outFolder,paste("pca2d","_",j,".html",sep=""), sep = "/"))
+  htmlwidgets::saveWidget(p, file=widget_fn)
 
   ##### Generate PCA 3-D plot (PLOTLY)
   p <- plot_ly(expData_pca.df, x = ~PC1, y = ~PC2, z = ~PC3, color = ~Target, text=rownames(expData_pca.df), colors = targets.colour[[1]], type='scatter3d', mode = "markers", marker = list(size=8, symbol="circle"), width = 800, height = 800) %>%
-  layout(scene = list(xaxis = list(title = paste("PC ", PC1, " (",importance_pca[PC1],")",sep="")), yaxis = list(title = paste("PC ", PC2, " (",importance_pca[PC2],")",sep="")), zaxis = list(title = paste("PC ", PC3, " (",importance_pca[PC3],")",sep="")) ), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'v', y = 0.5), showlegend=TRUE)
+  layout(scene = list(xaxis = list(title = paste("PC ", PC1, " (",importance_pca[PC1],")",sep="")), yaxis = list(title = paste("PC ", PC2, " (",importance_pca[PC2],")",sep="")), zaxis = list(title = paste("PC ", PC3, " (",importance_pca[PC3],")",sep="")) ), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'h', y = 1.1))
 
   ##### Save the box-plot as html (PLOTLY)
-  htmlwidgets::saveWidget(as_widget(p), paste(outFolder,paste("pca3d","_",j,".html",sep=""), sep = "/"))
+  widget_fn = paste(outFolder,paste0("pca_3d","_",j,".html"),sep="/")
+  htmlwidgets::saveWidget(p, file=widget_fn)
+
+  ##### Close any open graphics devices
+  graphics.off()
 }
