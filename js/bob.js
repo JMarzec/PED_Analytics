@@ -91,14 +91,10 @@ function LoadPapersTable() {
       column_number: 5,
       filter_type: 'multi_select_custom_func',
       custom_func: cumulative,
-      select_type: 'select2',
+      select_type: 'chosen',
       text_data_delimiter: ',',
       filter_container_id: 'bioinfo_filter',
-    }
-  ],
-  {
-    cumulative_filtering: true
-  });
+    }]);
 
 	// highlight selected rows
 	$('#papers tbody').on( 'click', 'tr', function () {
