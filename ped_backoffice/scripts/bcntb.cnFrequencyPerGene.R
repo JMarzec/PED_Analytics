@@ -12,9 +12,9 @@
 
 ################################################################################
 #
-#   Description: Script performing principal component analysis using normalised expression data. It generates 3-dimensional plot of user-defined principal component and two . NOTE: the script allowes to process gene matrix with duplicated gene IDs.
+#   Description: Script generating copy-number (CN) frequency plot using relative linear copy-number values. The pipeline calls gained and lost genes by estimating the putative copy-number alterations from the linear copy-number values. It assigns gain for linear CN values above 0.5 and loss for linear CN values below -0.5. NOTE: the script allowes to process gene matrix with duplicated gene IDs.
 #
-#   Command line use example: Rscript bcntb.cnFrequencyPerGene.R --cn_file cn_chr_pos_noXY.csv --target cn_target.txt --colouring Target --dir /Users/marzec01/Desktop/git/PED_bioinformatics_portal/PED_Analytics_backup/ped_backoffice/data/ccle
+#   Command line use example: Rscript bcntb.cnFrequencyPerGene.R --cn_file cn_chr_pos.csv --target cn_target.txt --colouring Target --dir /Users/marzec01/Desktop/git/PED_bioinformatics_portal/PED_Analytics_backup/ped_backoffice/data/ccle
 #
 #   First arg:      Full path with name of the normalised expression matrix
 #   Second arg:     Full path with name of the text file with samples annotation. The file is expected to include the following columns: sample name (1st column) and annotation (3rd column)
@@ -78,22 +78,6 @@ duplGenes <- function(expData) {
 }
 
 
-##### Assign colours to analysed groups
-getTargetsColours <- function(targets) {
-    
-    ##### Predefined selection of colours for groups
-    targets.colours <- c("red","blue","green","darkgoldenrod","darkred","deepskyblue", "coral", "cornflowerblue", "chartreuse4", "bisque4", "chocolate3", "cadetblue3", "darkslategrey", "lightgoldenrod4", "mediumpurple4", "orangered3")
-    
-    f.targets <- factor(targets)
-    vec.targets <- targets.colours[1:length(levels(f.targets))]
-    targets.colour <- rep(0,length(f.targets))
-    for(i in 1:length(f.targets))
-    targets.colour[i] <- vec.targets[ f.targets[i]==levels(f.targets)]
-    
-    return( list(vec.targets, targets.colour) )
-}
-
-
 #===============================================================================
 #    Load libraries
 #===============================================================================
@@ -132,6 +116,7 @@ cn_files = unlist(strsplit(cnFile, ","))
 
 ##### Read sample annotation file
 annData <- read.table(paste(outFolder,annFile,sep = "/"),sep="\t",as.is=TRUE,header=TRUE)
+annData$Sample_Name <- make.names(annData$Sample_Name)
 
 
 for (j in 1:length(cn_files)) {
@@ -145,8 +130,13 @@ for (j in 1:length(cn_files)) {
     cnData <- duplGenes(cnData)
     
     ######  Keep genomic info separately
-    cnData.pos <- cnData[, c(1:3)]
+    cnData.pos <- cnData[, c(1:2)]
     cnData <- cnData[, c(3:ncol(cnData))]
+    
+    ###### Change chromosomes X and Y to numbers 23 and 24, respectively
+    cnData.pos$Chromosome[ cnData.pos$Chromosome  %in% "X" ] <- 23
+    cnData.pos$Chromosome[ cnData.pos$Chromosome %in% "Y" ] <- 24
+    
     
     ###### Check samples present in current dataset
     selected_samples <- intersect(as.character(annData$Sample_Name),colnames(cnData))
@@ -163,7 +153,7 @@ for (j in 1:length(cn_files)) {
     #layout(xaxis = list( title = "Relative linear copy-number values"), yaxis = list( title = "Frequency"), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F)
     #
     ##### Save the histogram as html (PLOTLY)
-    #htmlwidgets::saveWidget(as_widget(p), "cn_hist.html")
+    #htmlwidgets::saveWidget(as_widget(p), paste(outFolder,paste0("cn_hist_",j,".html"),sep="/"))
     
     #===============================================================================
     #    Generate frequency plot for each group separately
@@ -174,7 +164,7 @@ for (j in 1:length(cn_files)) {
         ##### Select samples from the group
         target.sel <- unique(sort(targets, decreasing = TRUE))[i]
         
-        cnData.subset.sel <- cnData.subset[ targets %in%  target.sel    ]
+        cnData.subset.sel <- cnData.subset[ targets %in%  target.sel ]
         
         ##### Add genomic info
         cnData.subset.sel <- cbind(cnData.pos, cnData.subset.sel)
@@ -216,14 +206,16 @@ for (j in 1:length(cn_files)) {
         }
         
         ##### Create a list with chromosme boundaries info
+        levels(chr_annot$Chromosome)[ levels(chr_annot$Chromosome) == 23 ] <- "X"
         chr_nos <- list( x = chr_annot[, 3], y = -1.1, text = chr_annot$Chromosome, xref = "x", yref = "y", showarrow = FALSE )
+        
         
         ##### Prepare vector to indicate chromosome boundaries
         chr_lines <- rep(0, nrow(cnData.subset.sel))
-        chr_lines[ chr_annot[,2]-1 ] <- 1
-        chr_lines[ chr_annot[,2] ] <- -1
+        chr_lines[ chr_annot$count - 1 ] <- 1
+        chr_lines[ chr_annot$count ] <- -1
         
-        #####
+        ##### Prepare data for plotting with plotly
         data2plot <- data.frame(rownames(cnData.subset.sel), cnData.subset.sel$Loss, cnData.subset.sel$Gain, chr_lines)
         
         colnames(data2plot) <- c("Gene", "Loss", "Gain", "Chr_line")
@@ -235,7 +227,7 @@ for (j in 1:length(cn_files)) {
         p <- plot_ly(data2plot, x = ~Gene, y = ~Gain, type = 'bar', name = "Gain", color = I("red"), width = 800, height = 400) %>%
         add_trace(y = ~Loss, name = "Loss", color = I("blue")) %>%
         add_trace(x = ~Gene, y = ~Chr_line, type = 'scatter', name = "Chromosomes", mode = 'lines', line = list(color = "lightgrey", dash = "1px"), hoverinfo = "skip") %>%
-        layout( title = target.sel, yaxis = list(title = "Fraction of samples"), xaxis = list(title = "Chromosome number", showticklabels = FALSE), annotations = chr_nos, barmode = 'group', bargap = 0, margin = list(l=50, r=50, b=100, t=50, pad=4), autosize = F, legend = list(orientation = 'h', y = 1.07, tracegroupgap=0), showlegend=TRUE)
+        layout( title = paste0(target.sel, " (n=", (ncol(cnData.subset.sel)-4),")"), yaxis = list(title = "Fraction of samples"), xaxis = list(title = "Chromosome number", showticklabels = FALSE), annotations = chr_nos, barmode = 'group', bargap = 0, margin = list(l=50, r=50, b=100, t=50, pad=4), autosize = F, legend = list(orientation = 'h', y = 1.07, tracegroupgap=0), showlegend=TRUE)
         
         ##### Save the frequency plot as html (PLOTLY)
         widget_fn = paste(outFolder,paste0("frequency_plot_",j,"_",i,".html"),sep="/")
@@ -247,7 +239,15 @@ for (j in 1:length(cn_files)) {
     #===============================================================================
     #    Generate heatmap to examine differences across all samples
     #===============================================================================
-    #
+    
+    ##### Keep only annotation for the samples presnet in the data matrix
+    annData <- annData[ annData$Sample_Name %in% selected_samples,   ]
+    
+    ##### Make sure that the sample order is the same as in the data matrix
+    rownames(annData) <- annData$Sample_Name
+    annData <- annData[ selected_samples,  ]
+    
+    
     ##### Order the data accordingly to genomic postions
     cnData.subset = cnData.subset[order(as.numeric(cnData.pos$Chromosome),as.numeric(cnData.pos$Position)),]
     
@@ -259,9 +259,6 @@ for (j in 1:length(cn_files)) {
     ##### Prepare samples annotation info
     annot <- as.matrix(annData[,c(2:ncol(annData))])
     names(annot) <- names(annData)[c(2:ncol(annData))]
-    
-    ##### Prepare colours for sample groups
-    targets.colour <- getTargetsColours(annData[,2])
     
     ##### Transpose matrix
     cnData.subset.t <- data.frame(t(cnData.subset))

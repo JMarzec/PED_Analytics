@@ -135,17 +135,17 @@ genes = unlist(strsplit(gene_list, ","))
 
 for (j in 1:length(exp_files)) {
 
-  #ef = paste(outFolder,"norm_files",exp_files[j],sep = "/")
-  ef = exp_files[j]
+    #ef = paste(outFolder,"norm_files",exp_files[j],sep = "/")
+    ef = exp_files[j]
 
-  ##### Read file with expression data
-  expData <- read.table(ef,sep="\t",header=TRUE,row.names=NULL, stringsAsFactors = FALSE)
+    ##### Read file with expression data
+    expData <- read.table(ef,sep="\t",header=TRUE,row.names=NULL, stringsAsFactors = FALSE)
 
-  ##### Deal with the duplicated genes
-  expData <- duplGenes(expData)
+    ##### Deal with the duplicated genes
+    expData <- duplGenes(expData)
 
-  selected_samples <- intersect(as.character(annData$File_name),colnames(expData))
-  expData.subset <- as.data.frame(t(scale(t(data.matrix(expData[,colnames(expData) %in% selected_samples])))))
+    selected_samples <- intersect(as.character(annData$File_name),colnames(expData))
+    expData.subset <- as.data.frame(t(scale(t(data.matrix(expData[,colnames(expData) %in% selected_samples])))))
 
 	gene.expr <- expData.subset[genes, ]
 
