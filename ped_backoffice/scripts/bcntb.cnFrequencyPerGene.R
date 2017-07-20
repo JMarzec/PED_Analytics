@@ -81,10 +81,10 @@ duplGenes <- function(expData) {
 #===============================================================================
 #    Load libraries
 #===============================================================================
+
 suppressMessages(library(plotly))
 suppressMessages(library(heatmaply))
 suppressMessages(library(optparse))
-
 
 #===============================================================================
 #    Catching the arguments
@@ -207,6 +207,7 @@ for (j in 1:length(cn_files)) {
         
         ##### Create a list with chromosme boundaries info
         levels(chr_annot$Chromosome)[ levels(chr_annot$Chromosome) == 23 ] <- "X"
+        levels(chr_annot$Chromosome)[ levels(chr_annot$Chromosome) == 24 ] <- "Y"
         chr_nos <- list( x = chr_annot[, 3], y = -1.1, text = chr_annot$Chromosome, xref = "x", yref = "y", showarrow = FALSE )
         
         
