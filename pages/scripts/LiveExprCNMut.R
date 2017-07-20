@@ -34,6 +34,9 @@ rm(list=ls())
 ##### Close any open graphics devices
 graphics.off()
 
+### Setting environment for pandoc
+Sys.setenv(HOME = "")
+
 #===============================================================================
 #    Functions
 #===============================================================================
