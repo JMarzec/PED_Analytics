@@ -1,45 +1,45 @@
-Name	Target	Type	Gender	Ethnicity	Age	ER	PR	HER2
+Name	Type	Target	Gender	Ethnicity	Age	ER	PR	HER2
 MiaPaCa-2	Ductal adenocarcinoma	Primary Tumour	Male	Caucasian	65	NA	NA	NA
 Capan-2	Ductal adenocarcinoma	Primary Tumour	Male	Caucasian	56	NA	NA	NA
 Hs766T	Adenocarcinoma	Metastasis (lymph node)	Male	Caucasian	46	NA	NA	NA
-Panc10.05	Ductal adenocarcinoma	Primary Tumour	Male	Caucasian	NA	NA	NA	NA
+Panc10.05	Ductal adenocarcinoma	Primary Tumour	Male	Caucasian	-	NA	NA	NA
 AsPC-1	Ductal adenocarcinoma	Metastasis (ascites)	Female	Caucasian	62	NA	NA	NA
-L3.3	Adenosquamous carcinoma	Metastasis (lymph node)	Female	NS	NA	NA	NA	NA
-KP-2	Carcinoma	Primary Tumour	Female	NS	NA	NA	NA	NA
-PaTu8902	Adenocarcinoma	Primary Tumour	Female	NS	NA	NA	NA	NA
-DAN-G	Adenocarcinoma	Primary Tumour	Female	NS	NA	NA	NA	NA
-HuP-T3	Adenocarcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
-TCC-PAN2	Adenocarcinoma	Primary Tumour	Female	NS	NA	NA	NA	NA
-HuP-T4	Adenocarcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
-PSN1	Adenocarcinoma	Primary Tumour	NA	NS	NA	NA	NA	NA
-PaTu8988T	Adenocarcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
+L3.3	Adenosquamous carcinoma	Metastasis (lymph node)	Female	-	-	NA	NA	NA
+KP-2	Carcinoma	Primary Tumour	Female	-	65	NA	NA	NA
+PaTu8902	Adenocarcinoma	Primary Tumour	Female	-	44	NA	NA	NA
+DAN-G	Adenocarcinoma	Primary Tumour	Female	-	-	NA	NA	NA
+HuP-T3	Adenocarcinoma	Metastasis (ascites)	Male	Asian	66	NA	NA	NA
+TCC-PAN2	Adenocarcinoma	Primary Tumour	Female	-	-	NA	NA	NA
+HuP-T4	Adenocarcinoma	Metastasis (ascites)	Male	Asian	60	NA	NA	NA
+PSN1	Adenocarcinoma	Primary Tumour	Male	-	-	NA	NA	NA
+PaTu8988T	Adenocarcinoma	Metastasis (liver)	Female	-	64	NA	NA	NA
 Panc4.03	Ductal adenocarcinoma	Primary Tumour	Male	White	70	NA	NA	NA
-KCI-MOH1	Adenocarcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
-PK-59	Carcinoma	Metastasis (liver)	Female	NS	NA	NA	NA	NA
-QGP-1	Somatostatinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
+KCI-MOH1	Adenocarcinoma	Primary Tumour	-	-	-	NA	NA	NA
+PK-59	Carcinoma	Metastasis (liver)	Female	-	-	NA	NA	NA
+QGP-1	Somatostatinoma	Primary Tumour	Male	-	61	NA	NA	NA
 Panc3.27	Adenocarcinoma	Primary Tumour	Female	White	65	NA	NA	NA
 HPAF-II	Ductal adenocarcinoma	Primary Tumour	Male	Caucasian	44	NA	NA	NA
 Capan-1	Ductal adenocarcinoma	Metastasis (liver)	Male	Caucasian	40	NA	NA	NA
 CFPAC-1	Ductal adenocarcinoma	Metastasis (liver)	Male	Caucasian	26	NA	NA	NA
 Panc2.13	Adenocarcinoma	Primary Tumour	Female	White	64	NA	NA	NA
-BxPC-3	Ductal adenocarcinoma	Primary Tumour	Female	NS	61	NA	NA	NA
-KP-3	Adenosquamous carcinoma	Metastasis (liver)	Male	NS	NA	NA	NA	NA
-KP-4	Carcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
-PaTu8988S	Adenocarcinoma	Primary Tumour	Female	NS	NA	NA	NA	NA
-PL45	Ductal adenocarcinoma	Primary Tumour	Male	White	NA	NA	NA	NA
-SW1990	Adenocarcinoma	Primary Tumour	Male	Caucasian	56	NA	NA	NA
+BxPC-3	Ductal adenocarcinoma	Primary Tumour	Female	-	61	NA	NA	NA
+KP-3	Adenosquamous carcinoma	Metastasis (liver)	Male	Asian	75	NA	NA	NA
+KP-4	Carcinoma	Primary Tumour	Male	Asian	50	NA	NA	NA
+PaTu8988S	Adenocarcinoma	Metastasis (liver)	Female	-	-	NA	NA	NA
+PL45	Ductal adenocarcinoma	Primary Tumour	Male	Caucasian	-	NA	NA	NA
+SW1990	Adenocarcinoma	Metastasis (spleen)	Male	Caucasian	56	NA	NA	NA
 Panc-1	Ductal adenocarcinoma	Primary Tumour	Male	Caucasian	56	NA	NA	NA
 Panc8.13	Ductal adenocarcinoma	Primary Tumour	Male	White	85	NA	NA	NA
-PK-1	Ductal adenocarcinoma	Metastasis (liver)	Male	NS	NA	NA	NA	NA
+PK-1	Ductal adenocarcinoma	Metastasis (liver)	Male	-	-	NA	NA	NA
 Panc5.04	Ductal adenocarcinoma	Primary Tumour	Female	White	77	NA	NA	NA
-SUIT-2	Ductal adenocarcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
-YAPC	Carcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
-SNU-410	Adenocarcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
-T3M-4	Ductal adenocarcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
-PK-45H	Carcinoma	Primary Tumour	NA	NS	NA	NA	NA	NA
+SUIT-2	Ductal adenocarcinoma	Metastasis (liver)	Male	Asian	73	NA	NA	NA
+YAPC	Carcinoma	Metastasis (ascites)	Male	Asian	43	NA	NA	NA
+SNU-410	Adenocarcinoma	Metastasis (liver)	Male	Asian	53	NA	NA	NA
+T3M-4	Ductal adenocarcinoma	Metastasis (lymph node)	Male	Asian	64	NA	NA	NA
+PK-45H	Carcinoma	Primary Tumour	-	-	-	NA	NA	NA
 HPAC	Adenocarcinoma	Primary Tumour	Female	Caucasian	64	NA	NA	NA
 SU-86-86	Adenocarcinoma	Metastasis (liver)	Female	Caucasian	57	NA	NA	NA
 Panc2.03	Adenocarcinoma	Primary Tumour	Female	White	70	NA	NA	NA
-SNU-324	Adenocarcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
-SNU-213	Adenocarcinoma	Primary Tumour	Male	NS	NA	NA	NA	NA
-KLM-1	Ductal adenocarcinoma	Metastasis (liver)	Male	NS	NA	NA	NA	NA
+SNU-324	Adenocarcinoma	Primary Tumour	Male	Asian	50	NA	NA	NA
+SNU-213	Adenocarcinoma	Primary Tumour	Male	Asian	65	NA	NA	NA
+KLM-1	Ductal adenocarcinoma	Metastasis (liver)	Male	-	-	NA	NA	NA

@@ -4,43 +4,56 @@
 include('scripts/vars.php'); // from this point it's possible to use the variables present inside 'var.php' file
 
 // importing variables
-$iframe_directory = "$relative_root_dir/ped_backoffice/data/tcga/";
-$result_directory = "$absolute_root_dir/ped_backoffice/data/tcga/";
+$iframe_directory = "$relative_root_dir/ped_backoffice/data/icgc_PAEN-IT/";
+$result_directory = "$absolute_root_dir/ped_backoffice/data/icgc_PAEN-IT/";
 
 echo <<< EOT
   <!-- Results Section -->
-    <table id="tcga" class="display DataTable compact" cellspacing="0" width="100%">
+    <table id="icgc" class="display DataTable compact" cellspacing="0" width="100%">
         <!-- Table Header -->
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Target</th>
-                <th>Age</th>
-                <th>Smoking (years)</th>
-                <th>Alcohol history</th>
-                <th>Gender</th>
-                <th>Tumor stage</th>
-                <th>TNM staging</th>
-                <th>Histologic Grade</th>
+                <th>Project</th>
+                <th>Cancer type</th>
+                <th>Samples (expression)</th>
+                <th>Samples (survival)</th>
+                <th>Samples (copy number)</th>
+                <th>Samples (mutation)</th>
             </tr>
         </thead>
         <!-- Table Footer -->
         <tfoot>
             <tr>
-                <th>Name</th>
-                <th>Target</th>
-                <th>Age</th>
-                <th>Smoking (years)</th>
-                <th>Alcohol history</th>
-                <th>Gender</th>
-                <th>Tumor stage</th>
-                <th>TNM staging</th>
-                <th>Histologic Grade</th>
+                <th>Project</th>
+                <th>Cancer type</th>
+                <th>Samples (expression)</th>
+                <th>Samples (survival)</th>
+                <th>Samples (copy number)</th>
+                <th>Samples (mutation)</th>
             </tr>
         </tfoot>
     </table>
-
-  <div class="container" id="tcga_results">
+    
+        <center>
+      <table>
+        <tr style='text-align:center'>
+          <td>
+            <h3> Select ICGC project </h3>
+          </td>
+        </tr>
+        <tr>
+            <td>
+                <button class="analysis_sel" id="ICGC_PACA-AU"> PACA-AU </button>
+                <button class="analysis_sel" id="ICGC_PACA-CA"> PACA-CA </button>
+                <button class="analysis_sel" id="ICGC_PAEN-AU"> PAEN-AU </button>
+                <button class="analysis_sel" id="ICGC_PAEN-IT"> PAEN-IT </button>
+            </td>
+        </tr>
+      </table>
+    </center>
+    <br><br>
+    
+  <div class="container" id="icgc_results">
     <ul>
       <li><a href="#pca">PCA</a></li>
       <!-- Exclude clustering/heatmap for now
@@ -76,8 +89,8 @@ echo <<< EOT
     <!-- Exclude clustering/heatmap for now
     <div id="expression_clustering">
       <div class='description'>
-        <p class='pub_det'> Unsupervised hierarchical clustering of TCGA samples expression profiles is presented as heatmap with genes and samples
-        represented by columns and rows, respectively. The TCGA samples charactersitcs are also indicated on the right hand-side.
+        <p class='pub_det'> Unsupervised hierarchical clustering of ICGC (PACA-AU) samples expression profiles is presented as heatmap with genes and samples
+        represented by columns and rows, respectively. The ICGC (PACA-AU) samples charactersitcs are also indicated on the right hand-side.
         </p>
       </div>
 
@@ -98,17 +111,17 @@ echo <<< EOT
         <br><br>
       </div>
       <!-- putting gene selector -->
-      <select id="gea_tcga_sel"> </select>
-      <button id="gea_tcga_run" class="run"> Run analysis </button>
+      <select id="gea_icgc_sel"> </select>
+      <button id="gea_icgc_run" class="run"> Run analysis </button>
 
       <!-- Loading div -->
-      <div class='gea_tcga' id='gea_tcga'></div>
-      <iframe class='results' id='gea_tcga_sel_box'></iframe>
-      <iframe class='results' id='gea_tcga_sel_bar'></iframe>
+      <div class='gea_icgc' id='gea_icgc'></div>
+      <iframe class='results' id='gea_icgc_sel_box'></iframe>
+      <iframe class='results' id='gea_icgc_sel_bar'></iframe>
 
       <!-- Calling Javascripts -->
-      <script>LoadGeneSelector("gea_tcga_sel", "", "", "tcga")</script>
-      <script>LoadAnalysis("gea_tcga_sel","gea_tcga_run","tcga","","tcga_gene_expression","0")</script>
+      <script>LoadGeneSelector("gea_icgc_sel", "", "", "icgc_PAEN-IT")</script>
+      <script>LoadAnalysis("gea_icgc_sel","gea_icgc_run","icgc","","icgc_PAEN-IT_gene_expression","0")</script>
     </div>
 
     <div id="co_expression_analysis">
@@ -124,22 +137,22 @@ echo <<< EOT
         <u class="note"> Just the genes present in the specific study are listed and taken into account for the analysis! </u>
         <br><br>
         <!-- putting gene selector -->
-        <select multiple id="cea_tcga_sel"> </select>
+        <select multiple id="cea_icgc_sel"> </select>
         <br><br><br>
         <h4> ...or you can paste you gene list here (separated by any wide space character)</h4>
         <br><br>
-        <textarea id='textcea_tcga_sel' rows='3' cols='80'></textarea>
+        <textarea id='textcea_icgc_sel' rows='3' cols='80'></textarea>
         <br>
-        <button id="cea_tcga_run" class="run"> Run analysis </button>
+        <button id="cea_icgc_run" class="run"> Run analysis </button>
       </div>
 
       <!-- Loading div -->
-      <div class='cea_tcga' id='cea_tcga'></div>
-      <iframe class='results' id='cea_tcga_sel_hm'></iframe>
+      <div class='cea_icgc' id='cea_icgc'></div>
+      <iframe class='results' id='cea_icgc_sel_hm'></iframe>
 
       <!-- Calling Javascripts -->
-      <script>LoadGeneSelector("cea_tcga_sel", "", "", "tcga")</script>
-      <script>LoadAnalysis("cea_tcga_sel","cea_tcga_run","tcga","","tcga_co_expression","1")</script>
+      <script>LoadGeneSelector("cea_icgc_sel", "", "", "icgc_PAEN-IT")</script>
+      <script>LoadAnalysis("cea_icgc_sel","cea_icgc_run","icgc","","icgc_PAEN-IT_co_expression","1")</script>
     </div>
 
     <div id="expression_layering">
@@ -158,17 +171,17 @@ echo <<< EOT
       </div>
 
       <!-- putting gene selector -->
-      <select id="el_tcga_sel"> </select>
-      <button id="el_tcga_run" class="run"> Run analysis </button>
+      <select id="el_icgc_sel"> </select>
+      <button id="el_icgc_run" class="run"> Run analysis </button>
 
       <!-- Loading div -->
-      <div class='el_tcga' id='el_tcga'></div>
-      <iframe class='results' id='el_tcga_sel_boxel_mut'></iframe>
-      <iframe class='results' id='el_tcga_sel_el_mut'></iframe>
+      <div class='el_icgc' id='el_icgc'></div>
+      <iframe class='results' id='el_icgc_sel_boxel_mut'></iframe>
+      <iframe class='results' id='el_icgc_sel_el_mut'></iframe>
 
       <!-- Calling Javascripts -->
-      <script>LoadGeneSelector("el_tcga_sel", "", "", "tcga")</script>
-      <script>LoadAnalysis("el_tcga_sel","el_tcga_run","tcga","","tcga_expression_layering","1")</script>
+      <script>LoadGeneSelector("el_icgc_sel", "", "", "icgc_PAEN-IT")</script>
+      <script>LoadAnalysis("el_icgc_sel","el_icgc_run","icgc","","icgc_PAEN-IT_expression_layering","1")</script>
     </div>
 
     <div id="copy_number_alterations">
@@ -180,7 +193,7 @@ echo <<< EOT
       </div>
 
       <!-- Loading div -->
-      <div class='fcna_tcga' id='fcna_tcga'>
+      <div class='fcna_icgc' id='fcna_icgc'>
         <div id='download' style='padding-top:40px'></div>
         <iframe class='results' id='cna_1' src='$iframe_directory/frequency_plot_1_1.html' onload='resizeIframe(this)'></iframe>
       </div>
@@ -199,25 +212,25 @@ echo <<< EOT
       </div>
 
       <!-- putting gene selector -->
-      <select multiple id="cna_tcga_sel"> </select>
+      <select multiple id="cna_icgc_sel"> </select>
       <br><br><br>
       <h4> ...or you can paste you gene list here (separated by any wide space character)</h4>
       <br><br>
-      <textarea id='textcna_tcga_sel' rows='3' cols='80'></textarea>
+      <textarea id='textcna_icgc_sel' rows='3' cols='80'></textarea>
       <br>
-      <button id="cna_tcga_run" class="run"> Run analysis </button>
+      <button id="cna_icgc_run" class="run"> Run analysis </button>
       <br><br>
 
-      <div class='cna_tcga' id='cna_tcga'></div>
+      <div class='cna_icgc' id='cna_icgc'></div>
 
       <!-- Loading div -->
-      <div class='cna_tcga' id='cna_tcga'>
+      <div class='cna_icgc' id='cna_icgc'>
         <iframe class='results' id='cna_hm' onload='resizeIframe(this)'></iframe>
       </div>
 
       <!-- Calling Javascripts -->
-      <script>LoadGeneSelector("cna_tcga_sel", "", "", "tcga_cnv")</script>
-      <script>LoadAnalysis("cna_tcga_sel","cna_tcga_run","tcga","","tcga_gene_copy_number","1")</script>
+      <script>LoadGeneSelector("cna_icgc_sel", "", "", "icgc_PAEN-IT_cnv")</script>
+      <script>LoadAnalysis("cna_icgc_sel","cna_icgc_run","icgc","","icgc_PAEN-IT_gene_copy_number","1")</script>
 
     </div>
 
@@ -225,7 +238,7 @@ echo <<< EOT
       <div class='description'>
         <p class='pub_det'>
           The relationship between gene of interest and survival can be assessed.
-          A univariate model is applied to the survival data and TCGA samples are assigned to risk groups
+          A univariate model is applied to the survival data and ICGC (PACA-AU) samples are assigned to risk groups
           based on the median dichotomisation of mRNA expression intensities of the selected gene.
           Relationships are presented as Kaplan-Meier plots.
         </p>
@@ -236,22 +249,22 @@ echo <<< EOT
         <br><br>
       </div>
       <!-- putting gene selector -->
-      <select id="surv_tcga_sel"> </select>
-      <button id="surv_tcga_run" class="run"> Run analysis </button>
+      <select id="surv_icgc_sel"> </select>
+      <button id="surv_icgc_run" class="run"> Run analysis </button>
 
       <!-- Loading div -->
-      <div class='surv_tcga' id='surv_tcga'></div>
+      <div class='surv_icgc' id='surv_icgc'></div>
 
       <!-- loading graph container when result launched  -->
       <div class='survival_container' id='GraphContainerSURV'></div>
 
       <center>
-        <iframe class='results' id='surv_tcga_sel_km'></iframe>
+        <iframe class='results' id='surv_icgc_sel_km'></iframe>
       </center>
 
       <!-- Calling Javascripts -->
-      <script>LoadGeneSelector("surv_tcga_sel", "", "", "tcga")</script>
-      <script>LoadAnalysis("surv_tcga_sel","surv_tcga_run","tcga","","tcga_survival","0")</script>
+      <script>LoadGeneSelector("surv_icgc_sel", "", "", "icgc_PAEN-IT")</script>
+      <script>LoadAnalysis("surv_icgc_sel","surv_icgc_run","icgc","","icgc_PAEN-IT_survival","0")</script>
     </div>
 
     <div id='gene_networks'>
@@ -267,7 +280,7 @@ echo <<< EOT
                 <br>
                 <u class="note"> Just the genes present in the specific study are listed and taken into account for the analysis! </u>
                 <br><br>
-                <select multiple id='tcga_net_sel'></select>
+                <select multiple id='icgc_net_sel'></select>
                 <br><br>
               </td>
             </tr>
@@ -281,7 +294,7 @@ echo <<< EOT
                 <input type='text' id='max_thr_label' readonly>
               </td>
               <td>
-                <button id="tcga_run_net" class="run"> Run analysis </button>
+                <button id="icgc_run_net" class="run"> Run analysis </button>
               </td>
             </tr>
           </table>
@@ -291,7 +304,7 @@ echo <<< EOT
           </div>
       </div>
 
-      <div class='tcga_net' id='tcga_net'></div>
+      <div class='icgc_net' id='icgc_net'></div>
 
       <!-- loading graph container when result launched -->
       <div class='network_container' id='GraphContainerNET'>
@@ -354,13 +367,13 @@ EOT;
 
       <!-- loading javascripts -->
       <script>LoadScoreSlider('mentha-score')</script>
-      <script>LoadGeneSelector('tcga_net_sel','','','tcga')</script>
-      <script>LoadAnalysis('tcga_net_sel','tcga_run_net','','','tcga_gene_network','0')</script>
+      <script>LoadGeneSelector('icgc_net_sel','','','icgc_PAEN-IT')</script>
+      <script>LoadAnalysis('icgc_net_sel','icgc_run_net','','','icgc_PAEN-IT_gene_network','0')</script>
     </div>
   </div>
 
-  <script> LoadTCGATable() </script>
-  <script> LoadTCGATabs() </script>
+  <script> LoadICGCTable() </script>
+  <script> LoadICGCTabs() </script>
 
 EOT;
 ?>

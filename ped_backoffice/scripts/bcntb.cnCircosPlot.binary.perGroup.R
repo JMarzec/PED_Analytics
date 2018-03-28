@@ -1,6 +1,6 @@
 ################################################################################
 #
-#   File name: bcntb.exprCircosPlot.perGroup.R
+#   File name: bcntb.cnCircosPlot.binary.perGroup.R
 #
 #   Authors: Jacek Marzec ( j.marzec@qmul.ac.uk )
 #
@@ -12,9 +12,9 @@
 
 ################################################################################
 #
-#   Description: Script preparing normalised expression data for generating circos plot. The pipeline performs Z-score transformation and calculates median values of Z-scores FOR EACH GROUP. The script retrieves gene's chromosomal positions using biomaRt R package. NOTE: the script allowes to process gene matrix with duplicated gene IDs.
+#   Description: Script preparing binarised copy-number values data for generating circos plot. The pipeline rounds the copy-number information FOR EACH GROUP. The script retrieves gene's chromosomal positions using biomaRt R package. NOTE: the script allowes to process gene matrix with duplicated gene IDs.
 #
-#   Command line use example: Rscript bcntb.exprCircosPlot.perGroup.R --exp_file 15471_1.processed.genename.csv --target target.txt --colouring Target --dir /Users/marzec01/Desktop/git/PED_bioinformatics_portal/PED_Analytics/ped_backoffice/data/E-GEOD-15471_19260470
+#   Command line use example: Rscript bcntb.cnCircosPlot.binary.perGroup.R --cn_file cn_binary.csv  --target cn_target.txt --colouring Target --dir /Users/marzec01/Desktop/git/PED_bioinformatics_portal/PED_Analytics/ped_backoffice/data/tcga
 #
 #   First arg:      Full path with name of the normalised copy-number data
 #   Second arg:     Full path with name of the output folder
@@ -45,6 +45,24 @@ prepare2write <- function (x) {
     return(x2write)
 }
 
+##### Decide which copy-number status to assign for each gene
+decide.cn.status <- function (x) {
+
+  x <- as.numeric(x)
+
+  ##### assign status different then '0' only to genes with at least 70% of samples with some copy-number alteration
+  if ( table(x)[ names(table(x))==0 ]/length(x) < 0.7  ) {
+
+    ##### Select the most frequent alteration
+    cn.status <- names(sort(table(x)[ !(names(table(x))==0)], decreasing = TRUE))[1]
+
+  } else {
+    cn.status <- "0"
+  }
+
+  return(cn.status)
+}
+
 #===============================================================================
 #    Load libraries
 #===============================================================================
@@ -58,7 +76,7 @@ suppressMessages(library(biomaRt))
 #    Catching the arguments
 #===============================================================================
 option_list = list(
-    make_option(c("-e", "--exp_file"), action="store", default=NA, type='character',
+    make_option(c("-e", "--cn_file"), action="store", default=NA, type='character',
         help="File containing experimental data"),
     make_option(c("-t", "--target"), action="store", default=NA, type='character',
         help="Clinical data saved in tab-delimited format"),
@@ -70,7 +88,7 @@ option_list = list(
 
 opt = parse_args(OptionParser(option_list=option_list))
 
-expFile <- opt$exp_file
+cnFile <- opt$cn_file
 annFile <- opt$target
 target <- opt$colouring
 outFolder <- opt$dir
@@ -80,43 +98,33 @@ outFolder <- opt$dir
 #    Main
 #===============================================================================
 
-exp_files = unlist(strsplit(expFile, ","))
+cn_files = unlist(strsplit(cnFile, ","))
 
 ##### Read sample annotation file
 annData <- read.table( paste(outFolder,annFile,sep = "/"),sep="\t",as.is=TRUE,header=TRUE)
-annData$File_name <- make.names(annData$File_name)
+annData$Sample_Name <- make.names(annData$Sample_Name)
 
-for (j in 1:length(exp_files)) {
+for (j in 1:length(cn_files)) {
 
-    ef = paste(outFolder,"norm_files",exp_files[j],sep = "/")
+    ef = paste(outFolder,"norm_files",cn_files[j],sep = "/")
 
-    ##### Read file with expression data
-    expData <- read.table(ef,sep="\t",header=TRUE,row.names=NULL, stringsAsFactors = FALSE)
+    ##### Read file with copy-number data
+    cnData <- read.table(ef,sep="\t",header=TRUE,row.names=NULL, stringsAsFactors = FALSE)
 
     ###### Deal with the duplicated genes
-    rownames(expData) = make.names(expData$Gene.name, unique=TRUE)
-    expData <- expData[,-1]
+    rownames(cnData) = make.names(cnData$Gene.name, unique=TRUE)
+    cnData <- cnData[,-1]
 
     ###### Check samples present in current dataset
-    selected_samples <- intersect(as.character(annData$File_name),colnames(expData))
-    expData.subset <- expData[,colnames(expData) %in% selected_samples]
+    selected_samples <- intersect(as.character(annData$Sample_Name),colnames(cnData))
+    cnData.subset <- cnData[,colnames(cnData) %in% selected_samples]
 
     ##### Make sure that the sample order is the same as in the target file
-    expData.subset <- expData.subset[ , selected_samples ]
+    cnData.subset <- cnData.subset[ , selected_samples ]
 
-    targets <- subset(annData, File_name %in% colnames(expData.subset))[,target]
+    targets <- subset(annData, Sample_Name %in% colnames(cnData.subset))[,target]
 
-    ##### Perfrom Z-score transformation
-    expData.z <- as.data.frame(t(scale(t(data.matrix(expData[,colnames(expData) %in% selected_samples])))))
-
-    ##### Generate histogram to get an idea about the relative linear copy-number values in the entire data
-    p <- plot_ly(x = ~unlist(expData.z), type = 'histogram', width = 800, height = 500) %>%
-    layout(xaxis = list( title = "Gene expression (Z-score)"), yaxis = list( title = "Frequency"), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F)
-
-    ##### Save the histogram as html (PLOTLY)
-    htmlwidgets::saveWidget(as_widget(p), paste0(outFolder,"/norm_files/", expFile, "_perGroup_annotated_hist_",j,".html"), selfcontained = FALSE)
-
-
+    ##### Access Ensembl BioMart
     mart = useMart(biomart = "ENSEMBL_MART_ENSEMBL",dataset="hsapiens_gene_ensembl",host = "jul2015.archive.ensembl.org")
 
     #listFilters(mart)
@@ -127,45 +135,51 @@ for (j in 1:length(exp_files)) {
     theAttributes = c("hgnc_symbol", "chromosome_name","start_position","end_position")
 
     ###### Retrieve the gene annotation
-    annot <- getBM(attributes=theAttributes,filters=theFilters,values=list(rownames(expData.z), c(1:22,"X","Y")),mart=mart)
+    annot <- getBM(attributes=theAttributes,filters=theFilters,values=list(rownames(cnData.subset), c(1:22,"X","Y")),mart=mart)
 
     ###### remove duplicated genes
     annot <- annot[!duplicated(annot["hgnc_symbol"]),]
 
     ###### Get genes present in the data and annotation object
-    annot_genes <- intersect(annot$hgnc_symbol,rownames(expData.z))
+    annot_genes <- intersect(annot$hgnc_symbol,rownames(cnData.subset))
 
-    expData.z <- expData.z[rownames(expData.z) %in% annot_genes, ]
+    cnData.subset <- cnData.subset[rownames(cnData.subset) %in% annot_genes, ]
     annot <- annot[ annot$hgnc_symbol %in% annot_genes, ]
     rownames(annot) <- annot$hgnc_symbol
     annot <- annot[,-1]
 
     ##### Make sure that the genes order is the same as in the annotation object
-    expData.z <- expData.z[ rownames(annot), ]
+    cnData.subset <- cnData.subset[ rownames(annot), ]
 
-    ##### Calculate the per-gene median for each group
-    expData.z.median <- annot
+    ##### Calculate the per-gene copy-number for each group
+    cnData.subset.status <- annot
 
     for (i in 1:length(unique(targets))) {
 
         ##### Select samples from the group
         target.sel <- unique(targets, decreasing = TRUE)[i]
 
-        expData.z.sel <- expData.z[ ,targets %in%  unique(targets)[i] ]
+        cnData.subset.sel <- cnData.subset[ ,targets %in%  unique(targets)[i] ]
 
-        ##### Calculate the per-gene median for each group
-        expData.z.sel.median <- as.data.frame(rowMedians(data.matrix(expData.z.sel)))
-        rownames(expData.z.sel.median) <- rownames(expData.z.sel.median)
-        colnames(expData.z.sel.median) <- target.sel
+        ##### Decide which copy-number status to assign for each gene
+        cnData.subset.sel.status <- as.data.frame(apply(cnData.subset.sel, 1, decide.cn.status))
+        colnames(cnData.subset.sel.status) <- target.sel
 
-        ##### Create gene-annotated matrix with Z-score median values for each group
-        expData.z.median <- cbind(expData.z.median, expData.z.sel.median)
+        ##### Create gene-annotated matrix with PER-GROUP copy-number status
+        cnData.subset.status <- cbind(cnData.subset.status, cnData.subset.sel.status)
     }
+
+    ##### Generate histogram to get an idea about the frequency copy-number status across ALL GROUPS
+    p <- plot_ly(x = ~unlist(cnData.subset.status[,-c(1:3)]), type = 'histogram', width = 800, height = 500) %>%
+    layout(xaxis = list( title = "Per-gene copy-number values across groups"), yaxis = list( title = "Frequency"), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F)
+
+    ##### Save the histogram as html (PLOTLY)
+    htmlwidgets::saveWidget(as_widget(p), paste0(outFolder,"/norm_files/", cnFile, "_perGroup_annotated_hist_",j,".html"), selfcontained = FALSE)
 
     setwd(outFolder)
 
-    ##### Write the annotated expression data into a file
-    write.table(prepare2write(expData.z.median), file=paste0("norm_files/", expFile, "_perGroup_annotated_",j,".csv"), sep="\t", row.names=FALSE,  quote=FALSE)
+    ##### Write the annotated copy-number data into a file
+    write.table(prepare2write(cnData.subset.status), file=paste0("norm_files/", cnFile, "_perGroup_annotated_",j,".csv"), sep="\t", row.names=FALSE,  quote=FALSE)
 }
 
 ##### Clear workspace

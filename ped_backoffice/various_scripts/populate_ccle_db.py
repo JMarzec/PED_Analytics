@@ -27,6 +27,7 @@ db = MySQLdb.connect(host="localhost",  # your host, usually localhost
 
 # you must create a Cursor object. It will let
 #  you execute all the queries you need
+db.autocommit(True)
 cur = db.cursor()
 
 # opening connection to the file and perform queries
@@ -36,8 +37,8 @@ with open(ccle_file, 'r') as f:
         line = line.rstrip().split("\t")
         # initialising arguments
         name = line[0]
-        target = line[1]
-        type_derived_from = line[2]
+        target = line[2]
+        cell_type = line[1]
         gender = line[3]
         ethnicity = line[4]
         age = line[5]
@@ -45,7 +46,7 @@ with open(ccle_file, 'r') as f:
         pr = line[7]
         her2 = line[8]
 
-        cur.execute("INSERT INTO ccle(name, target, type_derived_from, gender, ethnicity, age, er, pr, her2) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\")" % (name, target, type_derived_from, gender, ethnicity, age, er, pr, her2))
+        cur.execute("INSERT INTO ccle(name, target, type_derived_from, gender, ethnicity, age, er, pr, her2) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");" % (name, target, type_derived_from, gender, ethnicity, age, er, pr, her2))
 
 # close connection to the database
 db.close()

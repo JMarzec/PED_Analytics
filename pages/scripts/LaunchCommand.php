@@ -10,6 +10,9 @@ $ArrayExpressCode = $_GET["ArrayExpressCode"];
 $pmid = $_GET["PMID"];
 $genes = $_GET["Genes"];
 $unique_id = $_GET["rc"];
+// initialising values just for gene networks analysis
+$min_thr = $_GET["min_thr"];
+$max_thr = $_GET["max_thr"];
 
 $exec_error_flag = 0; // error flag switched off by default
 
@@ -32,7 +35,6 @@ $results_files_string = substr($results_files_string, 0, -1);
 if ($TypeAnalysis == "gene_expression") {
   // *** Gene Expression Analyses *** //
   // launching Rscript for the analysis...
-  error_log("Rscript LiveGeneExpression.R --exp_file $results_files_string --target $target_file --colouring \"Target\" --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output,0);
   system("Rscript LiveGeneExpression.R --exp_file $results_files_string --target $target_file --colouring \"Target\" --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
 
 } elseif ($TypeAnalysis == "co_expression") {
@@ -45,38 +47,97 @@ if ($TypeAnalysis == "gene_expression") {
   // launching Rscript for the analysis...
   error_log("Rscript LiveSurvivalGene.R --exp_file $results_files_string --target $target_file --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", 0);
   system("Rscript LiveSurvivalGene.R --exp_file $results_files_string --target $target_file --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+
+}  elseif ($TypeAnalysis == "gene_network") {
+  // *** Gene Network analysis *** //
+  $net_file = "$absolute_root_dir/src/mentha.txt";
+  // launching Rscript for the analysis...
+  //echo "Rscript LiveNetworkCreator.R --net_file $net_file --exp_file $results_files_string --target $target_file --genes \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" --min_thr $min_thr --max_thr $max_thr 2>&1";
+  system("Rscript LiveNetworkCreator.R --net_file $net_file --exp_file $results_files_string --target $target_file --genes \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" --min_thr $min_thr --max_thr $max_thr 2>&1", $output);
+
 } elseif ($TypeAnalysis == "ccle_gene_expression") {
   // *** Gene Expression Analyses for CCLE *** //
   // launching Rscript for the analysis...
-  $expr_file = "$absolute_root_dir/ped_backoffice/data/ccle/gene_exp.csv";
+  $expr_file = "$absolute_root_dir/ped_backoffice/data/ccle/norm_files/gene_exp.csv";
   $target_file = "$absolute_root_dir/ped_backoffice/data/ccle/gea_target.txt";
-  error_log("Rscript LiveGeneExpression.R --exp_file $expr_file --target $target_file --colouring \"Target\" --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", 0);
   system("Rscript LiveGeneExpression.R --exp_file $expr_file --target $target_file --colouring \"Target\" --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+
 } elseif ($TypeAnalysis == "ccle_co_expression") {
   // *** Co-expression Analyses *** //
   // launching Rscript for the analysis...
-  $expr_file = "$absolute_root_dir/ped_backoffice/data/ccle/gene_exp.csv";
+  $expr_file = "$absolute_root_dir/ped_backoffice/data/ccle/norm_files/gene_exp.csv";
   $target_file = "$absolute_root_dir/ped_backoffice/data/ccle/gea_target.txt";
   system("Rscript LiveCoExpression.R --exp_file $expr_file --target $target_file --genes \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+
 } elseif ($TypeAnalysis == "ccle_expression_layering") {
   // *** Expression Layering Analyses *** //
   // launching Rscript for the analysis...
-  $expr_file = "$absolute_root_dir/ped_backoffice/data/ccle/gene_exp.csv";
-  $cn_file = "$absolute_root_dir/ped_backoffice/data/ccle/cn.csv";
+  $expr_file = "$absolute_root_dir/ped_backoffice/data/ccle/norm_files/gene_exp.csv";
+  $cn_file = "$absolute_root_dir/ped_backoffice/data/ccle/norm_files/cn.csv";
   $target_file = "$absolute_root_dir/ped_backoffice/data/ccle/cn_target.txt";
-  $mut_file = "$absolute_root_dir/ped_backoffice/data/ccle/mut.csv";
+  $mut_file = "$absolute_root_dir/ped_backoffice/data/ccle/norm_files/mut.csv";
   system("Rscript LiveExprCN.R --exp_file $expr_file --cn_file $cn_file --target $target_file --colouring \"Target\" --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
   system("Rscript LiveExprCNMut.R --exp_file $expr_file --cn_file $cn_file --mut_file $mut_file --target $target_file --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+
+} elseif ($TypeAnalysis == "ccle_gene_copy_number") {
+  // *** CN alteration Analyses *** //
+  // launching Rscript for the analysis...
+  $cn_file = "$absolute_root_dir/ped_backoffice/data/ccle/norm_files/cn_chr_pos.csv";
+  $target_file = "$absolute_root_dir/ped_backoffice/data/ccle/cn_target.txt";
+  system("Rscript LiveCNAlterations.R --cn_file $cn_file --cn_file $cn_file --target $target_file --colouring \"Target\" --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+
+} elseif ($TypeAnalysis == "ccle_gene_network") {
+  // *** Gene Network analysis *** //
+  $net_file = "$absolute_root_dir/src/mentha.txt";
+  $expr_file = "$absolute_root_dir/ped_backoffice/data/ccle/norm_files/gene_exp.csv";
+  $target_file = "$absolute_root_dir/ped_backoffice/data/ccle/gea_target.txt";
+  // launching Rscript for the analysis...
+  //echo "Rscript LiveNetworkCreator.R --net_file $net_file --exp_file $expr_file --target $target_file --genes \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" --min_thr $min_thr --max_thr $max_thr 2>&1";
+  system("Rscript LiveNetworkCreator.R --net_file $net_file --exp_file $expr_file --target $target_file --genes \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" --min_thr $min_thr --max_thr $max_thr 2>&1", $output);
+
 } elseif ($TypeAnalysis == "tcga_gene_expression") {
   // *** Gene Expression Analyses for CCLE *** //
   // launching Rscript for the analysis...
-  $expr_file = "$absolute_root_dir/ped_backoffice/data/tcga/gene_exp.csv";
+  $expr_file = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/gene_exp.csv";
   $target_file = "$absolute_root_dir/ped_backoffice/data/tcga/gea_target.txt";
-  system("Rscript LiveGeneExpression.R --exp_file $expr_file --target $target_file --colouring \"definition\" --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+  system("Rscript LiveGeneExpression.R --exp_file $expr_file --target $target_file --colouring \"Target\" --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+
 } elseif ($TypeAnalysis == "tcga_co_expression") {
   // *** Co-expression Analyses *** //
   // launching Rscript for the analysis...
-  $expr_file = "$absolute_root_dir/ped_backoffice/data/tcga/gene_exp.csv";
+  $expr_file = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/gene_exp.csv";
   $target_file = "$absolute_root_dir/ped_backoffice/data/tcga/gea_target.txt";
   system("Rscript LiveCoExpression.R --exp_file $expr_file --target $target_file --genes \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+
+} elseif ($TypeAnalysis == "tcga_expression_layering") {
+  // *** Expression Layering Analyses *** //
+  // launching Rscript for the analysis...
+  $expr_file = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/gene_exp.csv";
+  $cn_file = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/cn.csv";
+  $target_file = "$absolute_root_dir/ped_backoffice/data/tcga/cn_target.txt";
+  $mut_file = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/mut.csv";
+  system("Rscript LiveExprCNMut.R --exp_file $expr_file --cn_file $cn_file --mut_file $mut_file --target $target_file --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+
+} elseif ($TypeAnalysis == "tcga_gene_copy_number") {
+  // *** CN alteration Analyses *** //
+  // launching Rscript for the analysis...
+  $cn_file = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/cn_binary_chr_pos.csv";
+  $target_file = "$absolute_root_dir/ped_backoffice/data/tcga/cn_target.txt";
+  system("Rscript LiveCNAlterations_binary.R --cn_file $cn_file --target $target_file --colouring \"Target\" --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+
+} elseif ($TypeAnalysis == "tcga_gene_network") {
+  // *** Gene Network analysis *** //
+  $net_file = "$absolute_root_dir/src/mentha.txt";
+  $expr_file = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/gene_exp.csv";
+  $target_file = "$absolute_root_dir/ped_backoffice/data/tcga/gea_target.txt";
+  // launching Rscript for the analysis...
+  //echo "Rscript LiveNetworkCreator.R --net_file $net_file --exp_file $expr_file --target $target_file --genes \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" --min_thr $min_thr --max_thr $max_thr 2>&1";
+  system("Rscript LiveNetworkCreator.R --net_file $net_file --exp_file $expr_file --target $target_file --genes \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" --min_thr $min_thr --max_thr $max_thr 2>&1", $output);
+}  elseif ($TypeAnalysis == "tcga_survival") {
+  // *** Survival Analyses *** //
+  // launching Rscript for the analysis...
+  $expr_file = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/gene_exp.csv";
+  $target_file = "$absolute_root_dir/ped_backoffice/data/tcga/gea_target.txt";
+  system("Rscript LiveSurvivalGene.R --exp_file $expr_file --target $target_file --gene \"$genes\" --dir $tmp_dir --hexcode \"$unique_id\" 2>&1", $output);
+
 }

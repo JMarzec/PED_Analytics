@@ -12,17 +12,17 @@ import MySQLdb
 # =============== Parsing arguments ===========================#
 parser = argparse.ArgumentParser(
     description='Arguments to create target file for BCNTBbp')
-parser.add_argument('--tcga', type=str, nargs=1,
-                    help='tcga file where to extract informations')
+parser.add_argument('--genie', type=str, nargs=1,
+                    help='genie file where to extract informations')
 args = parser.parse_args()
 
-tcga_file = args.tcga[0]
+genie_file = args.genie[0]
 
 
 # =============== Connect to MySQL database ===========================#
 db = MySQLdb.connect(host="localhost",  # your host, usually localhost
-                     user="biomart",           # your username
-                     passwd="biomart76qmul",         # your password
+                     user="root",           # your username
+                     passwd="Biotech8886",         # your password
                      db="ped_bioinf_portal")        # name of the data base
 
 # you must create a Cursor object. It will let
@@ -31,23 +31,20 @@ db.autocommit(True)
 cur = db.cursor()
 
 # opening connection to the file and perform queries
-with open(tcga_file, 'r') as f:
+with open(genie_file, 'r') as f:
     next(f)
     for line in f:
         line = line.rstrip().split("\t")
         # initialising arguments
         name = line[1]
-        target = line[2]
-        age = line[7]
-        years_smoked = line[8]
-        alcohol_history = line[9]
-        gender = line[10]
-        ethnicity = line[11]
-        tumor_stage = line[12]
-        tnm_staging = line[13]
-        histologic_grade = line[14]
+        target = line[3]
+        cancer_type = line[4]
+        gender = line[5]
+        ethnicity = line[6]
+        race = line[7]
+        age = line[8]
 
-        cur.execute("INSERT INTO tcga(name, target, age, years_smoked, alcohol_history, gender, ethnicity, tumor_stage, tnm_staging, histologic_grade) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");" % (name, target, age, years_smoked, alcohol_history, gender, ethnicity, tumor_stage, tnm_staging, histologic_grade))
+        cur.execute("INSERT INTO genie(name, target, cancer_type, gender, ethnicity, race, age) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");" % (name, target, cancer_type, gender, ethnicity, race, age))
 
 # close connection to the database
 db.close()

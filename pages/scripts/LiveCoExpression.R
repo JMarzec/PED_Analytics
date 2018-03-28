@@ -47,45 +47,6 @@ prepare2write <- function (x) {
 ##### Create 'not in' operator
 "%!in%" <- function(x,table) match(x,table, nomatch = 0) == 0
 
-
-##### Deal with the duplicated genes
-duplGenes <- function(expData) {
-
-    genesList <- NULL
-    genesRepl <- NULL
-
-    for ( i in 1:nrow(expData) ) {
-
-        geneName <- expData[i,1]
-
-        ##### Distingish duplicated genes by adding duplicate number
-        if ( geneName %in% genesList ) {
-
-            ##### Report genes with more than one duplicates
-            if ( geneName %in% names(genesRepl) ) {
-
-                genesRepl[[ geneName ]] = genesRepl[[ geneName ]]+1
-
-                geneName <- paste(geneName, ".", genesRepl[[ geneName ]], sep="")
-
-            } else {
-                genesRepl[[ geneName ]] <- 2
-
-                geneName <- paste(geneName, ".2", sep="")
-            }
-        }
-        genesList <- c(genesList,geneName)
-    }
-
-    rownames(expData) <- genesList
-
-    ##### Remove the first column with gene names, which now are used as row names
-    expData <- expData[, -1]
-
-    return(expData)
-}
-
-
 #===============================================================================
 #    Load libraries
 #===============================================================================
@@ -132,6 +93,7 @@ annData$File_name <- make.names(annData$File_name)
 
 ##### Read gene list
 genes = unlist(strsplit(gene_list, ","))
+genes = make.names(genes, unique=TRUE)
 
 for (j in 1:length(exp_files)) {
 
@@ -142,7 +104,8 @@ for (j in 1:length(exp_files)) {
     expData <- read.table(ef,sep="\t",header=TRUE,row.names=NULL, stringsAsFactors = FALSE)
 
     ##### Deal with the duplicated genes
-    expData <- duplGenes(expData)
+    rownames(expData) = make.names(expData$Gene.name, unique=TRUE)
+    expData <- expData[,-1]
 
     selected_samples <- intersect(as.character(annData$File_name),colnames(expData))
     expData.subset <- as.data.frame(t(scale(t(data.matrix(expData[,colnames(expData) %in% selected_samples])))))
@@ -189,7 +152,7 @@ for (j in 1:length(exp_files)) {
 	colnames(corr.res) <- c( "Gene", paste(rep(genes, each = 2), c("Correlation", "P-value")) )
 
 	##### Write the results into a file
-	write.table(corr.res, file=paste0(hexcode,"_corr.txt"), row.names=FALSE)
+	write.table(corr.res, file=paste0(hexcode,"_corr.txt"), row.names=FALSE,  quote=FALSE)
 
 	#===============================================================================
 	#     Pairwise correlation heat map for defined genes
@@ -206,7 +169,7 @@ for (j in 1:length(exp_files)) {
 	layout(autosize = TRUE, width = 800, margin = list(l=150, r=50, b=150, t=50, pad=4), showlegend = FALSE)
 
 	##### Save the heatmap as html (PLOTLY)
-	htmlwidgets::saveWidget(as_widget(p), paste0(hexcode,"_corr_heatmap.html"))
+	htmlwidgets::saveWidget(as_widget(p), paste0(hexcode,"_corr_heatmap.html"), selfcontained = FALSE)
 }
 
 ##### Clear workspace

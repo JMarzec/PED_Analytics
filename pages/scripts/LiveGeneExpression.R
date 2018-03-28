@@ -48,7 +48,7 @@ Sys.setenv(HOME = "")
 getTargetsColours <- function(targets) {
 
     ##### Predefined selection of colours for groups
-    targets.colours <- c("red","blue","green","darkgoldenrod","darkred","deepskyblue", "coral", "cornflowerblue", "chartreuse4", "bisque4", "chocolate3", "cadetblue3", "darkslategrey", "lightgoldenrod4", "mediumpurple4", "orangered3")
+    targets.colours <- c("red","blue","green","darkgoldenrod","darkred","deepskyblue", "coral", "cornflowerblue", "chartreuse4", "bisque4", "chocolate3", "cadetblue3", "darkslategrey", "lightgoldenrod4", "mediumpurple4", "orangered3","indianred1","blueviolet","darkolivegreen4","darkgoldenrod4","firebrick3","deepskyblue4", "coral3", "dodgerblue1", "chartreuse3", "bisque3", "chocolate4", "cadetblue", "darkslategray4", "lightgoldenrod3", "mediumpurple3", "orangered1")
 
     f.targets <- factor(targets)
     vec.targets <- targets.colours[1:length(levels(f.targets))]
@@ -58,44 +58,6 @@ getTargetsColours <- function(targets) {
 
     return( list(vec.targets, targets.colour) )
 }
-
-##### Deal with the duplicated genes
-duplGenes <- function(expData) {
-
-    genesList <- NULL
-    genesRepl <- NULL
-
-    for ( i in 1:nrow(expData) ) {
-
-        geneName <- expData[i,1]
-
-        ##### Distingish duplicated genes by adding duplicate number
-        if ( geneName %in% genesList ) {
-
-            ##### Report genes with more than one duplicates
-            if ( geneName %in% names(genesRepl) ) {
-
-                genesRepl[[ geneName ]] = genesRepl[[ geneName ]]+1
-
-                geneName <- paste(geneName, ".", genesRepl[[ geneName ]], sep="")
-
-            } else {
-                genesRepl[[ geneName ]] <- 2
-
-                geneName <- paste(geneName, ".2", sep="")
-            }
-        }
-        genesList <- c(genesList,geneName)
-    }
-
-    rownames(expData) <- genesList
-
-    ##### Remove the first column with gene names, which now are used as row names
-    expData <- expData[, -1]
-
-    return(expData)
-}
-
 
 #===============================================================================
 #    Load libraries
@@ -135,6 +97,8 @@ hexcode <- opt$hexcode
 #    Main
 #===============================================================================
 
+gene = make.names(gene)
+
 # splitting exp_file string to retrieve all the identified samples
 exp_files = unlist(strsplit(expFile, ","))
 
@@ -149,11 +113,12 @@ for (j in 1:length(exp_files)) {
 
   ##### Read file with expression data
   expData <- read.table(ef,sep="\t",header=TRUE,row.names=NULL, stringsAsFactors = FALSE)
-  
+
   ##### Deal with the duplicated genes
   if( nrow(expData) != 0 ) {
-    expData <- duplGenes(expData)
-  
+    rownames(expData) = make.names(expData$Gene.name, unique=TRUE)
+    expData <- expData[,-1]
+
     selected_samples <- intersect(as.character(annData$File_name),colnames(expData))
     expData.subset <- as.data.frame(t(scale(t(data.matrix(expData[,colnames(expData) %in% selected_samples])))))
 
@@ -164,7 +129,7 @@ for (j in 1:length(exp_files)) {
             gene.expr <- cbind(gene.expr, expData.subset[gene, ])
         }
     }
-    
+
   ##### Remove samples from platfrom for which the data cannot be processed
   } else {
       annData <- annData[ annData$File_name %!in% colnames(expData),  ]
@@ -219,11 +184,11 @@ gene.expr.df <- data.frame(targets, as.numeric(gene.expr))
 colnames(gene.expr.df) <- c("Group", "Expression")
 
 
-p <- plot_ly(gene.expr.df, y= ~Expression, color = ~Group, type = 'box', jitter = 0.3, pointpos = 0, boxpoints = 'all', marker = list(color = colourByGroups), line = list(color = unique(colourByGroups)), width = 800, height = 600) %>%
+p <- plot_ly(gene.expr.df, y= ~Expression, color = ~Group, type = 'box', jitter = 0.3, pointpos = 0, boxpoints = 'all', colors = targets.colour[[1]], width = 800, height = 600) %>%
 layout(yaxis = list( title = paste0(gene, "  mRNA expression (z-score)")), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'v', y = 0.5), showlegend=TRUE)
 
 ##### Save the box-plot as html (PLOTLY)
-htmlwidgets::saveWidget(as_widget(p), paste0(hexcode,"_box.html"))
+htmlwidgets::saveWidget(as_widget(p), paste0(hexcode,"_box.html"), selfcontained = FALSE)
 
 
 ##### Generate bar-plot (PLOTLY)
@@ -234,11 +199,11 @@ colnames(dataByGroups.df) <- c("Group","Sample", "Expression")
 ##### The default order will be alphabetized unless specified as below
 dataByGroups.df$Sample <- factor(dataByGroups.df$Sample, levels = dataByGroups.df[["Sample"]])
 
-p <- plot_ly(dataByGroups.df, x = ~Sample, y = ~Expression, color = ~Group, type = 'bar',  marker = list(color = c(colourByGroups)), width = 800, height = 400) %>%
+p <- plot_ly(dataByGroups.df, x = ~Sample, y = ~Expression, color = ~Group, type = 'bar', colors = targets.colour[[1]], width = 800, height = 400) %>%
 layout(title = "", xaxis = list(title = ""), yaxis = list(title = paste0(gene, "  mRNA expression (z-score)")), margin = list(l=50, r=50, b=100, t=50, pad=4), autosize = F, legend = list(orientation = 'v', y = 0.5), showlegend=TRUE)
 
 ##### Save the bar-plot as html (PLOTLY)
-htmlwidgets::saveWidget(as_widget(p), paste0(hexcode,"_bar.html"))
+htmlwidgets::saveWidget(as_widget(p), paste0(hexcode,"_bar.html"), selfcontained = FALSE)
 
 ##### Clear workspace
 rm(list=ls())

@@ -53,7 +53,7 @@ option_list = list(
               help="File containing experimental data"),
   make_option(c("-t", "--target"), action="store", default=NA, type='character',
               help="Clinical data saved in tab-delimited format"),
-  make_option(c("-p", "--gene"), action="store", default=NA, type='character',
+  make_option(c("-p", "--genes"), action="store", default=NA, type='character',
               help="ID of genes/probe of interest"),
   make_option(c("-d", "--dir"), action="store", default=NA, type='character',
               help="Default directory"),
@@ -65,7 +65,7 @@ opt = parse_args(OptionParser(option_list=option_list))
 
 mutFile <- opt$exp_file
 annFile <- opt$target
-gene <- opt$gene
+gene_list <- opt$genes
 outFolder <- opt$dir
 hexcode <- opt$hexcode
 
@@ -85,13 +85,23 @@ hexcode <- opt$hexcode
 #gene_list <- c("BRCA1", "BRCA2", "ERBB2", "S100P", "AURKA", "TP53");
 
 #========================================================================================#
-# COLLECTION OF INFORMATION: CLINICAL, MUTATION AND GENES
-annData <- read.table(file = annFile, row.names = 1, header = T, sep = "\t");
-mutData <- read.table(file = mutFile, row.names = NULL, header = T, sep = "\t");
+
+##### Read maf file with mutation data
+mutData <- read.table(file = mutFile, row.names = NULL, header = TRUE, sep = "\t")
+mutData[,1] <- make.names(mutData[,1])
+
+##### Read sample annotation file
+annData <- read.table(file = annFile, row.names = 1, header = TRUE, sep = "\t")
+annData$File_name <- make.names(annData$File_name)
+
+
+##### Keep only samples with annotation info
+##mutData <- mutData[mutData[,1] %in% annData$File_name, ]
+
 
 # isolate genes, split by comma
 genes = unlist(strsplit(gene_list, ","));
-
+genes = make.names(genes)
 
 # SET THE WORKING DIRECTORY TO THE WORKSPACE
 setwd(outFolder);
@@ -108,8 +118,12 @@ mutData.user <- mutData[rownames(mutData.user),];
 mutCount <- as.data.frame(table(mutData.user$Hugo_Symbol));
 mutCount <- mutCount[ order(mutCount$Freq, decreasing=TRUE ),];
 
+# The column with sample name in the annotation file has to be colled "bcr_patient_barcode"
+colnames(annData) <- sub("File_name","bcr_patient_barcode", colnames(annData))
+
 # Subset clinical data to display pre-defined covariates
-annCovar <- c("bcr_patient_barcode", "surv.stat", "gender", "subtype",  "stage_category");
+#annCovar <- c("bcr_patient_barcode", "surv.stat", "gender", "subtype",  "stage_category");
+annCovar <- c("bcr_patient_barcode", "CANCER_TYPE_DETAILED", "SAMPLE_TYPE", "SEX", "ETHNICITY",  "PRIMARY_RACE");
 annData.top <- annData[ , annCovar ];
 
 
@@ -117,12 +131,13 @@ annData.top <- annData[ , annCovar ];
 TCGAvisualize_oncoprint(
 	mut = mutData.user,
 	genes = genes,
-	filename = paste0(hexcode, "_mutations_user_genes.pdf", sep=""),
+	filename = paste0(hexcode, "_hm.pdf"),
 	annotation = annData.top,
-	color=c("background"="#CCCCCC","DEL"="purple", "INS"="yellow","SNP"="brown"),
-	rows.font.size= 3,
+	color=c("background"="#CCCCCC","DEL"="blue", "INS"="red","SNP"="brown","DNP"="darkgoldenrod"),
+	rows.font.size= 4,
 	width = 5,
 	heatmap.legend.side = "right",
 	dist.col = 0,
-	label.font.size = 3
+	label.font.size = 4
 );
+

@@ -27,6 +27,7 @@ db = MySQLdb.connect(host="localhost",  # your host, usually localhost
 
 # you must create a Cursor object. It will let
 #  you execute all the queries you need
+db.autocommit(True)
 cur = db.cursor()
 
 # opening connection to the file and perform queries
@@ -46,7 +47,7 @@ with open(tcga_file, 'r') as f:
         tnm_staging = line[13]
         histologic_grade = line[14]
 
-        cur.execute("INSERT INTO tcga(name, target, age, years_smoked, alcohol_history, gender, ethnicity, tumor_stage, tnm_staging, histologic_grade) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\")" % (name, target, age, years_smoked, alcohol_history, gender, ethnicity, tumor_stage, tnm_staging, histologic_grade))
+        cur.execute("INSERT INTO tcga(name, target, age, years_smoked, alcohol_history, gender, ethnicity, tumor_stage, tnm_staging, histologic_grade) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");" % (name, target, age, years_smoked, alcohol_history, gender, ethnicity, tumor_stage, tnm_staging, histologic_grade))
 
 # close connection to the database
 db.close()

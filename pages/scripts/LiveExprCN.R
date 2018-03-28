@@ -48,7 +48,7 @@ Sys.setenv(HOME = "")
 getTargetsColours <- function(targets) {
 
     ##### Predefined selection of colours for groups
-    targets.colours <- c("red","blue","green","darkgoldenrod","darkred","deepskyblue", "coral", "cornflowerblue", "chartreuse4", "bisque4", "chocolate3", "cadetblue3", "darkslategrey", "lightgoldenrod4", "mediumpurple4", "orangered3")
+   targets.colours <- c("red","blue","green","darkgoldenrod","darkred","deepskyblue", "coral", "cornflowerblue", "chartreuse4", "bisque4", "chocolate3", "cadetblue3", "darkslategrey", "lightgoldenrod4", "mediumpurple4", "orangered3","indianred1","blueviolet","darkolivegreen4","darkgoldenrod4","firebrick3","deepskyblue4", "coral3", "dodgerblue1", "chartreuse3", "bisque3", "chocolate4", "cadetblue", "darkslategray4", "lightgoldenrod3", "mediumpurple3", "orangered1")
 
     f.targets <- factor(targets)
     vec.targets <- targets.colours[1:length(levels(f.targets))]
@@ -58,45 +58,6 @@ getTargetsColours <- function(targets) {
 
     return( list(vec.targets, targets.colour) )
 }
-
-
-##### Deal with the duplicated genes
-duplGenes <- function(expData) {
-
-    genesList <- NULL
-    genesRepl <- NULL
-
-    for ( i in 1:nrow(expData) ) {
-
-        geneName <- expData[i,1]
-
-        ##### Distingish duplicated genes by adding duplicate number
-        if ( geneName %in% genesList ) {
-
-            ##### Report genes with more than one duplicates
-            if ( geneName %in% names(genesRepl) ) {
-
-                genesRepl[[ geneName ]] = genesRepl[[ geneName ]]+1
-
-                geneName <- paste(geneName, ".", genesRepl[[ geneName ]], sep="")
-
-            } else {
-                genesRepl[[ geneName ]] <- 2
-
-                geneName <- paste(geneName, ".2", sep="")
-            }
-        }
-        genesList <- c(genesList,geneName)
-    }
-
-    rownames(expData) <- genesList
-
-    ##### Remove the first column with gene names, which now are used as row names
-    expData <- expData[, -1]
-
-    return(expData)
-}
-
 
 #===============================================================================
 #    Load libraries
@@ -139,18 +100,21 @@ hexcode <- opt$hexcode
 #    Main
 #===============================================================================
 
+gene = make.names(gene)
+
 # Read file with expression data
 expData <- read.table(expFile,sep="\t",as.is=TRUE,header=TRUE,row.names=NULL)
 
 # Deal with the duplicated genes
-expData <- duplGenes(expData)
-
+rownames(expData) = make.names(expData$Gene.name, unique=TRUE)
+expData <- expData[,-1]
 
 # Read file with CN data
 cnData <- read.table(cnFile,sep="\t",as.is=TRUE,header=TRUE,row.names=NULL)
 
 # Deal with the duplicated genes
-cnData <- duplGenes(cnData)
+rownames(cnData) = make.names(cnData$Gene.name, unique=TRUE)
+cnData <- cnData[,-1]
 
 
 # Keep only samples present in both the expression and CN datasets
@@ -171,23 +135,23 @@ coreName <- coreName[[1]][length(coreName[[1]])]
 
 
 # Read sample annotation file
-annData <- read.table(annFile,sep="\t",as.is=TRUE,header=TRUE,row.names=1)
-rownames(annData) <- gsub("-", ".", rownames(annData))
+annData <- read.table(annFile,sep="\t",as.is=TRUE,header=TRUE)
+annData$Sample_Name <- make.names(annData$Sample_Name)
 
 
 # Keep only samples with annotation info
-expData <- expData[,colnames(expData) %in% rownames(annData)]
-cnData <- cnData[,colnames(cnData) %in% rownames(annData)]
-annData <- subset(annData, rownames(annData) %in% colnames(expData))
+expData <- expData[,colnames(expData) %in% annData$Sample_Name]
+cnData <- cnData[,colnames(cnData) %in% annData$Sample_Name]
+annData <- subset(annData, annData$Sample_Name %in% colnames(expData))
+rownames(annData) <- annData$Sample_Name
 
 # Make sure that the samples order in the data matrix and annotation file is the same
 annData <- annData[colnames(expData),]
 
-
 # Check if the queried genes is present in the expression data
 genes <- rownames(expData)
 
-if ( gene %!in% rownames(expData) ) {
+if ( gene %!in% rownames(expData) || gene %!in% rownames(cnData) ) {
     #cat("The gene/probe", gene, "is not present in the data!", sep=" ")
     q()
 
@@ -200,16 +164,15 @@ if ( gene %!in% rownames(expData) ) {
 # Change working directory to the project workspace
 setwd(outFolder)
 
-
 # # Report samples not present in the the expression or CN matrices
 # if ( length(absentSamples.expData) > 0 ) {
 #
-#     write(absentSamples.expData, file = paste(coreName, gene, "absent_in_mRNA_data.txt", sep = "_"), append = FALSE, sep="\t")
+#     write(absentSamples.expData, file = paste(coreName, gene, "absent_in_mRNA_data.txt", sep = "_"), append = FALSE, sep="\t",  quote=FALSE)
 # }
 #
 # if ( length(absentSamples.cnData) > 0 ) {
 #
-#     write(absentSamples.cnData, file = paste(coreName, gene, "absent_in_CN_data.txt", sep = "_"), append = FALSE, sep="\t")
+#     write(absentSamples.cnData, file = paste(coreName, gene, "absent_in_CN_data.txt", sep = "_"), append = FALSE, sep="\t",  quote=FALSE)
 # }
 
 
@@ -234,7 +197,7 @@ p <- plot_ly(gene.df, x = ~CN, y = ~mRNA, color = ~Target, text=colnames(gene.ex
 layout(title = paste0("Pearson's r = ", expr_cn.corr), xaxis = list(title = paste0(gene, " relative linear copy-number values")), yaxis = list(title = paste0(gene, " mRNA expression")), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'v', y = 0.5), showlegend=TRUE)
 
 # Save the box-plot as html (PLOTLY)
-htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_mRNA_vs_CN_plot.html"))
+htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_mRNA_vs_CN_plot.html"), selfcontained = FALSE)
 
 
 #===============================================================================
@@ -246,12 +209,14 @@ p <- plot_ly(x = ~as.numeric(gene.cn), type = 'histogram', width = 800, height =
 layout(xaxis = list( title = paste0(gene, " relative linear copy-number values")), yaxis = list( title = "Frequency"), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F)
 
 # Save the histogram as html (PLOTLY)
-htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_corr_hist.html"))
+htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_corr_hist.html"), selfcontained = FALSE)
 
 
-# Assign gain for linear CN values above 0.5 and loss for linear CN values below -0.5
-gene.cn[ gene.cn > 0.5 ] <- 1
-gene.cn[ gene.cn < -0.5 ] <- -1
+##### Assign gain and amplification for linear CN values above 0.5 and 1, respectively, and loss and deletion for linear CN values below -0.5 and -1, respectively
+gene.cn[ gene.cn >= 1 ] <- 2
+gene.cn[ gene.cn > 0.5 & gene.cn < 1 ] <- 1
+gene.cn[ gene.cn <= -1 ] <- -2
+gene.cn[ gene.cn < -0.5 & gene.cn > -1 ] <- -1
 gene.cn[ gene.cn <= 0.5 & gene.cn >= -0.5 ] <- 0
 
 
@@ -263,9 +228,11 @@ gene.cn[ gene.cn <= 0.5 & gene.cn >= -0.5 ] <- 0
 gene.df <- data.frame(targets, rep(unique(targets)[1],length(targets)), as.numeric(gene.cn), as.numeric(gene.expr))
 colnames(gene.df) <- c("Target", "Box", "CN", "mRNA")
 
-gene.cn[ gene.cn == 1 ] <- "(1) Gain"
-gene.cn[ gene.cn == -1 ] <- "(-1) Loss"
-gene.cn[ gene.cn == 0 ] <- "(0) Diploid"
+gene.cn[ gene.cn == 2 ] <- "Amplification"
+gene.cn[ gene.cn == 1 ] <- "Gain"
+gene.cn[ gene.cn == -1 ] <- "Loss"
+gene.cn[ gene.cn == -2 ] <- "Deletion"
+gene.cn[ gene.cn == 0 ] <- "Diploid"
 
 gene.df <- data.frame(targets, rep(unique(targets)[1],length(targets)), data.frame(t(gene.cn)), as.numeric(gene.expr))
 colnames(gene.df) <- c("Target", "Box", "CN", "mRNA")
@@ -289,15 +256,15 @@ add_boxplot(
 ) %>%
 layout(
 	title = "",
-	xaxis = list(title = paste0(gene, " relative linear copy-number values")),
+	xaxis = list(title = paste0(gene, " DNA copy number"), categoryarray = c("Deletion", "Loss", "Diploid", "Gain", "Amplification")),
 	yaxis = list(title = paste0(gene, " mRNA expression")),
 	margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'v', y = 0.5),
-    showlegend=TRUE
+  showlegend=TRUE
 )
 
 
 # Save the box-plot as html (PLOTLY)
-htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_mRNA_vs_CN_boxplot.html"))
+htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_mRNA_vs_CN_boxplot.html"), selfcontained = FALSE)
 
 ##### Clear workspace
 rm(list=ls())

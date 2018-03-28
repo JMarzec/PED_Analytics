@@ -1,6 +1,6 @@
 ################################################################################
 #
-#   File name: LiveCNAlterations.R
+#   File name: LiveCNAlterations_binary.R
 #
 #   Authors: Jacek Marzec ( j.marzec@qmul.ac.uk )
 #
@@ -14,9 +14,9 @@
 #
 #   Description: ... NOTE: the script allowes to process gene matrix with duplicated gene IDs.
 #
-#   Command line use example: Rscript LiveCNAlterations.R --cn_file cn_chr_pos.csv --target cn_target.txt --genes KRAS,TP53,SMAD4,CDKN2A --colouring Target --dir /Users/marzec01/Desktop/git/PED_bioinformatics_portal/PED_Analytics/ped_backoffice/data/ccle --hexcode fdshf
+#   Command line use example: Rscript LiveCNAlterations_binary.R --cn_file /Users/marzec01/Desktop/git/PED_bioinformatics_portal/PED_Analytics/ped_backoffice/data/tcga/cn_binary_chr_pos.csv --target /Users/marzec01/Desktop/git/PED_bioinformatics_portal/PED_Analytics/ped_backoffice/data/tcga/cn_target.txt --genes KRAS,TP53,SMAD4,CDKN2A --colouring Target --dir /Users/marzec01/Desktop/git/PED_bioinformatics_portal/PED_Analytics/ped_backoffice/data/tcga --hexcode fdshf
 #
-#   First arg:      Full path with name of the copy-number data
+#   First arg:      Full path with name of binarised copy-number data
 #   Second arg:     Full path with name of the text file with samples annotation. The file is expected to include the following columns: sample name (1st column) and annotation (3rd column)
 #   Third arg:      IDs of genes/probe of interest
 #   Forth arg:      Variable from the samples annotation file to be used for samples colouring
@@ -62,6 +62,7 @@ getTargetsColours <- function(targets) {
 
     return( list(vec.targets, targets.colour) )
 }
+
 
 #===============================================================================
 #    Load libraries
@@ -159,13 +160,6 @@ for (j in 1:length(cn_files)) {
   #    Generate heatmap to examine differences across all samples
   #===============================================================================
 
-  ##### Assign gain and amplification for linear CN values above 0.5 and 1, respectively, and loss and deletion for linear CN values below -0.5 and -1, respectively
-  cnData.subset[ cnData.subset >= 1 ] <- 2
-  cnData.subset[ cnData.subset > 0.5 & cnData.subset < 1 ] <- 1
-  cnData.subset[ cnData.subset <= -1 ] <- -2
-  cnData.subset[ cnData.subset < -0.5 & cnData.subset > -1 ] <- -1
-  cnData.subset[ cnData.subset <= 0.5 & cnData.subset >= -0.5 ] <- 0
-
   ##### Set the heatmap hight based on the number of queried genes
   if ( length(genes) > 2 ) {
       hheight <- length(genes)*100
@@ -183,14 +177,14 @@ for (j in 1:length(cn_files)) {
   hc <- hclust(as.dist(dist(data.frame(t(cnData.subset)), method="euclidean")), method="ward.D")
 
   ##### Generate heatmap (PLOTLY)
-  p <- heatmaply(data.frame(cnData.subset), Rowv=NULL, Colv=as.dendrogram(hc), colors = hm.colors, scale="none", trace="none", hide_colorbar = TRUE, fontsize_row = 8, fontsize_col = 8, showticklabels=c(TRUE, TRUE)) %>%
+  p <- heatmaply(data.frame(cnData.subset ), Rowv=NULL, Colv=as.dendrogram(hc), colors = hm.colors, scale="none", trace="none", hide_colorbar = TRUE, fontsize_row = 8, fontsize_col = 8, showticklabels=c(TRUE, TRUE)) %>%
   layout(autosize = FALSE, width = 800, height = hheight,  margin = list(l=100, r=50, b=150, t=50, pad=4), showlegend = FALSE)
 
   ##### Save the heatmap as html (PLOTLY)
   widget_fn = paste0(hexcode,"_hm_",j,".html")
   htmlwidgets::saveWidget(p, widget_fn, selfcontained = FALSE)
 
-  ##### Replace CN values 2 = "amplification", 1 = "gain", linear CN values -1 = "loss", -2 = "deletion" and 0 = "diploid"
+  ##### Replace CN values 1 to "gain", linear CN values -1 to "loss" and 0 to "diploid"
   cnData.subset[ cnData.subset == 2 ] <- "amplification"
   cnData.subset[ cnData.subset == 1 ] <- "gain"
   cnData.subset[ cnData.subset == -1 ] <- "loss"

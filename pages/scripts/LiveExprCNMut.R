@@ -48,7 +48,7 @@ Sys.setenv(HOME = "")
 getTargetsColours <- function(targets) {
 
     ##### Predefined selection of colours for groups
-    targets.colours <- c("red","blue","green","darkgoldenrod","darkred","deepskyblue", "coral", "cornflowerblue", "chartreuse4", "bisque4", "chocolate3", "cadetblue3", "darkslategrey", "lightgoldenrod4", "mediumpurple4", "orangered3")
+   targets.colours <- c("red","blue","green","darkgoldenrod","darkred","deepskyblue", "coral", "cornflowerblue", "chartreuse4", "bisque4", "chocolate3", "cadetblue3", "darkslategrey", "lightgoldenrod4", "mediumpurple4", "orangered3","indianred1","blueviolet","darkolivegreen4","darkgoldenrod4","firebrick3","deepskyblue4", "coral3", "dodgerblue1", "chartreuse3", "bisque3", "chocolate4", "cadetblue", "darkslategray4", "lightgoldenrod3", "mediumpurple3", "orangered1")
 
     f.targets <- factor(targets)
     vec.targets <- targets.colours[1:length(levels(f.targets))]
@@ -57,44 +57,6 @@ getTargetsColours <- function(targets) {
     targets.colour[i] <- vec.targets[ f.targets[i]==levels(f.targets)]
 
     return( list(vec.targets, targets.colour) )
-}
-
-
-##### Deal with the duplicated genes
-duplGenes <- function(expData) {
-
-    genesList <- NULL
-    genesRepl <- NULL
-
-    for ( i in 1:nrow(expData) ) {
-
-        geneName <- expData[i,1]
-
-        ##### Distingish duplicated genes by adding duplicate number
-        if ( geneName %in% genesList ) {
-
-            ##### Report genes with more than one duplicates
-            if ( geneName %in% names(genesRepl) ) {
-
-                genesRepl[[ geneName ]] = genesRepl[[ geneName ]]+1
-
-                geneName <- paste(geneName, ".", genesRepl[[ geneName ]], sep="")
-
-            } else {
-                genesRepl[[ geneName ]] <- 2
-
-                geneName <- paste(geneName, ".2", sep="")
-            }
-        }
-        genesList <- c(genesList,geneName)
-    }
-
-    rownames(expData) <- genesList
-
-    ##### Remove the first column with gene names, which now are used as row names
-    expData <- expData[, -1]
-
-    return(expData)
 }
 
 
@@ -139,24 +101,26 @@ hexcode <- opt$hexcode
 #    Main
 #===============================================================================
 
+gene = make.names(gene)
+
 # GENE EXPRESSION
 ##### Read file with expression data
 expData <- read.table(expFile,sep="\t",as.is=TRUE,header=TRUE,row.names=NULL)
 
 ##### Deal with the duplicated genes
-expData <- duplGenes(expData)
-
+rownames(expData) = make.names(expData$Gene.name, unique=TRUE)
+expData <- expData[,-1]
 
 ##### Read file with CN data
 cnData <- read.table(cnFile,sep="\t",as.is=TRUE,header=TRUE,row.names=NULL)
 
 ##### Deal with the duplicated genes
-cnData <- duplGenes(cnData)
-
+rownames(cnData) = make.names(cnData$Gene.name, unique=TRUE)
+cnData <- cnData[,-1]
 
 ##### Read maf file with mutation data
 mutData <- read.table(mutFile,sep="\t",as.is=TRUE,header=TRUE,row.names=NULL)
-
+mutData[,1] <- make.names(mutData[,1])
 
 ##### Keep only samples present in both the expression and CN datasets
 absentSamples.cnData <- colnames(expData)[colnames(expData) %!in% colnames(cnData)]
@@ -170,15 +134,15 @@ cnData <- cnData[,colnames(cnData) %in% colnames(expData)]
 cnData <- cnData[, colnames(expData)]
 
 ##### Read sample annotation file
-annData <- read.table(annFile,sep="\t",as.is=TRUE,header=TRUE,row.names=1)
-rownames(annData) <- gsub("-", ".", rownames(annData))
+annData <- read.table(annFile,sep="\t",as.is=TRUE,header=TRUE)
+annData$Sample_Name <- make.names(annData$Sample_Name)
 
 
 ##### Keep only samples with annotation info
-expData <- expData[,colnames(expData) %in% rownames(annData)]
-cnData <- cnData[,colnames(cnData) %in% rownames(annData)]
-mutData <- mutData[mutData[,1] %in% rownames(annData), ]
-annData <- subset(annData, rownames(annData) %in% colnames(expData))
+expData <- expData[,colnames(expData) %in% annData$Sample_Name]
+cnData <- cnData[,colnames(cnData) %in% annData$Sample_Name]
+mutData <- mutData[mutData[,1] %in% annData$Sample_Name, ]
+annData <- subset(annData, annData$Sample_Name %in% colnames(expData))
 
 
 ##### Make sure that the samples order in the data matrix and annotation file is the same
@@ -205,11 +169,11 @@ setwd(outFolder)
 
 # # Report samples not present in the the expression or CN matrices
 # if ( length(absentSamples.expData) > 0 ) {
-#     write(absentSamples.expData, file = paste(coreName, gene, "absent_in_mRNA_data.txt", sep = "_"), append = FALSE, sep="\t")
+#     write(absentSamples.expData, file = paste(coreName, gene, "absent_in_mRNA_data.txt", sep = "_"), append = FALSE, sep="\t",  quote=FALSE)
 # }
 #
 # if ( length(absentSamples.cnData) > 0 ) {
-#     write(absentSamples.cnData, file = paste(coreName, gene, "absent_in_CN_data.txt", sep = "_"), append = FALSE, sep="\t")
+#     write(absentSamples.cnData, file = paste(coreName, gene, "absent_in_CN_data.txt", sep = "_"), append = FALSE, sep="\t",  quote=FALSE)
 # }
 
 
@@ -228,7 +192,6 @@ for ( i in 1:ncol(gene.expr) ) {
     if (  gene.mut[i,1] %in% colnames(gene.expr) ) {
 
         ##### If for a specific sample more than one mutation in the queried genes is provided then the the additional mutation categories will be also provided
-
         if ( gene.mut.sample[gene.mut[i,1],"Mutation"] != "Not mutated"  ) {
 
             gene.mut.sample[gene.mut[i,1],"Mutation"] <- paste(gene.mut.sample[gene.mut[i,1],"Mutation"], gene.mut[i,3], sep=" & ")
@@ -259,7 +222,7 @@ p <- plot_ly(gene.df, x = ~CN, y = ~mRNA, color = ~Target, text=colnames(gene.ex
 layout(title = paste0("Pearson's r = ", expr_cn.corr), xaxis = list(title = paste0(gene, " relative linear copy-number values")), yaxis = list(title = paste0(gene, " mRNA expression")), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'v', y = 0.5), showlegend=TRUE)
 
 ##### Save the box-plot as html (PLOTLY)
-htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_mRNA_vs_CN_mut_plot.html"))
+htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_mRNA_vs_CN_mut_plot.html"), selfcontained = FALSE)
 
 #===============================================================================
 #     Calculate putative copy-number alterations
@@ -270,14 +233,14 @@ p <- plot_ly(x = ~as.numeric(gene.cn), type = 'histogram', width = 800, height =
 layout(xaxis = list( title = paste0(gene, " relative linear copy-number values")), yaxis = list( title = "Frequency"), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F)
 
 ##### Save the histogram as html (PLOTLY)
-htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_corr_hist.html"))
+htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_corr_hist.html"), selfcontained = FALSE)
 
-
-##### Assign gain for linear CN values above 0.5 and loss for linear CN values below -0.5
-gene.cn[ gene.cn > 0.5 ] <- 1
-gene.cn[ gene.cn < -0.5 ] <- -1
+##### Assign gain and amplification for linear CN values above 0.5 and 1, respectively, and loss and deletion for linear CN values below -0.5 and -1, respectively
+gene.cn[ gene.cn >= 1 ] <- 2
+gene.cn[ gene.cn > 0.5 & gene.cn < 1 ] <- 1
+gene.cn[ gene.cn <= -1 ] <- -2
+gene.cn[ gene.cn < -0.5 & gene.cn > -1 ] <- -1
 gene.cn[ gene.cn <= 0.5 & gene.cn >= -0.5 ] <- 0
-
 
 #===============================================================================
 #     Generate mRNA expression vs putative DNA copy-number alterations box-plot
@@ -287,9 +250,11 @@ gene.cn[ gene.cn <= 0.5 & gene.cn >= -0.5 ] <- 0
 gene.df <- data.frame(targets, rep(unique(targets)[1],length(targets)), as.numeric(gene.cn), as.numeric(gene.expr))
 colnames(gene.df) <- c("Target", "Box", "CN", "mRNA")
 
-gene.cn[ gene.cn == 1 ] <- "(1) Gain"
-gene.cn[ gene.cn == -1 ] <- "(-1) Loss"
-gene.cn[ gene.cn == 0 ] <- "(0) Diploid"
+gene.cn[ gene.cn == 2 ] <- "Amplification"
+gene.cn[ gene.cn == 1 ] <- "Gain"
+gene.cn[ gene.cn == -1 ] <- "Loss"
+gene.cn[ gene.cn == -2 ] <- "Deletion"
+gene.cn[ gene.cn == 0 ] <- "Diploid"
 
 gene.df <- data.frame(targets, rep(unique(targets)[1],length(targets)), data.frame(t(gene.cn)), as.numeric(gene.expr))
 colnames(gene.df) <- c("Target", "Box", "CN", "mRNA")
@@ -299,12 +264,17 @@ p <- plot_ly(gene.df, x = ~CN, y = ~mRNA, color = ~Target, colors = targets.colo
 
 add_boxplot(gene.df, x= ~CN, y= ~mRNA, color = ~Box, key=FALSE, line = list(color = "grey"), showlegend=FALSE ) %>%
 
-
-layout(title = "", xaxis = list(title = paste0(gene, " relative linear copy-number values")), yaxis = list(title = paste0(gene, " mRNA expression")), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'v', y = 0.5), showlegend=TRUE)
-
+layout(
+  title = "",
+  xaxis = list(title = paste0(gene, " DNA copy number"), categoryarray = c("Deletion", "Loss", "Diploid", "Gain", "Amplification")),
+  yaxis = list(title = paste0(gene, " mRNA expression")),
+  margin = list(l=50, r=50, b=50, t=50, pad=4),
+  autosize = F, legend = list(orientation = 'v', y = 0.5),
+  showlegend=TRUE
+)
 
 ##### Save the box-plot as html (PLOTLY)
-htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_mRNA_vs_CN_mut_boxplot.html"))
+htmlwidgets::saveWidget(as_widget(p), paste0(hexcode, "_mRNA_vs_CN_mut_boxplot.html"), selfcontained = FALSE)
 
 ##### Clear workspace
 rm(list=ls())

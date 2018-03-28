@@ -46,7 +46,7 @@ cb_style<-list(
                   nticks = 10,
                   xanchor = 'center',
                   xpad = 10),
-  size = 5, symbol = 'circle', cmin=0, cmax=1, cauto = F)
+  size = 5, symbol = 'circle', cmin=0, cmax=1, cauto = T)
 
 ### initialising plot margins
 margins <- list(
@@ -59,10 +59,10 @@ margins <- list(
 
 ### create plotly scatterplot
 p <- plot_ly(estimate.report,
-        x = estimate.report$StromalScore,
-        y = estimate.report$ImmuneScore,
-        z = estimate.report$ESTIMATEScore,
-        color = estimate.report$TumorPurity,
+        x =~ StromalScore,
+        y =~ ImmuneScore,
+        z =~ ESTIMATEScore,
+        color =~ TumorPurity,
         hoverinfo = 'text',
         text = paste('Sample Name:', estimate.report$File_name,
                      '<br><br>StromalScore:', estimate.report$StromalScore,
@@ -84,4 +84,4 @@ p <- plot_ly(estimate.report,
 estimate_filename = paste(opt$dir,"estimate.html",sep = "/")
 
 ## saving generated plot into web page
-htmlwidgets::saveWidget(p, estimate_filename)
+htmlwidgets::saveWidget(p, estimate_filename, selfcontained = FALSE)

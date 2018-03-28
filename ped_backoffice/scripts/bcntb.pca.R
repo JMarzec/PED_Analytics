@@ -40,7 +40,7 @@ graphics.off()
 getTargetsColours <- function(targets) {
 
     ##### Predefined selection of colours for groups
-    targets.colours <- c("red","blue","green","darkgoldenrod","darkred","deepskyblue", "coral", "cornflowerblue", "chartreuse4", "bisque4", "chocolate3", "cadetblue3", "darkslategrey", "lightgoldenrod4", "mediumpurple4", "orangered3")
+    targets.colours <- c("red","blue","green","darkgoldenrod","darkred","deepskyblue", "coral", "cornflowerblue", "chartreuse4", "bisque4", "chocolate3", "cadetblue3", "darkslategrey", "lightgoldenrod4", "mediumpurple4", "orangered3","indianred1","blueviolet","darkolivegreen4","darkgoldenrod4","firebrick3","deepskyblue4", "coral3", "dodgerblue1", "chartreuse3", "bisque3", "chocolate4", "cadetblue", "darkslategray4", "lightgoldenrod3", "mediumpurple3", "orangered1")
 
     f.targets <- factor(targets)
     vec.targets <- targets.colours[1:length(levels(f.targets))]
@@ -49,44 +49,6 @@ getTargetsColours <- function(targets) {
     targets.colour[i] <- vec.targets[ f.targets[i]==levels(f.targets)]
 
     return( list(vec.targets, targets.colour) )
-}
-
-
-##### Deal with the duplicated genes
-duplGenes <- function(expData) {
-
-    genesList <- NULL
-    genesRepl <- NULL
-
-    for ( i in 1:nrow(expData) ) {
-
-        geneName <- expData[i,1]
-
-        ##### Distingish duplicated genes by adding duplicate number
-        if ( geneName %in% genesList ) {
-
-            ##### Report genes with more than one duplicates
-            if ( geneName %in% names(genesRepl) ) {
-
-                genesRepl[[ geneName ]] = genesRepl[[ geneName ]]+1
-
-                geneName <- paste(geneName, "-", genesRepl[[ geneName ]], sep="")
-
-            } else {
-                genesRepl[[ geneName ]] <- 2
-
-                geneName <- paste(geneName, "-2", sep="")
-            }
-        }
-        genesList <- c(genesList,geneName)
-    }
-
-    rownames(expData) <- genesList
-
-    ##### Remove the first column with gene names, which now are used as row names
-    expData <- expData[, -1]
-
-    return(expData)
 }
 
 #===============================================================================
@@ -127,10 +89,11 @@ outFolder <- opt$dir
 #===============================================================================
 
 # splitting exp_file string to retrieve all the identified samples
-exp_files = unlist(strsplit(opt$exp_file, ","))
+exp_files = unlist(strsplit(expFile, ","))
 
 ##### Read sample annotation file
 annData <- read.table(annFile,sep="\t",as.is=TRUE,header=TRUE)
+annData$File_name <- make.names(annData$File_name)
 
 for (j in 1:length(exp_files)) {
   ef = paste(outFolder,"norm_files",exp_files[j],sep = "/")
@@ -139,17 +102,21 @@ for (j in 1:length(exp_files)) {
   expData <- read.table(ef,sep="\t",header=TRUE,row.names=NULL, stringsAsFactors = FALSE)
 
   ##### Deal with the duplicated genes
-  expData <- duplGenes(expData)
+  rownames(expData) = make.names(expData$Gene.name, unique=TRUE)
+  expData <- expData[,-1]
 
   selected_samples <- intersect(as.character(annData$File_name),colnames(expData))
   expData.subset <- as.data.frame(t(scale(t(data.matrix(expData[,colnames(expData) %in% selected_samples])))))
+
+  ##### Remove genes with NAs (mainly after Z-score transormation of genes with 0 values across all samples)
+  expData.subset <- na.omit(expData.subset)
 
   #===============================================================================
   #     Principal components analysis
   #===============================================================================
 
   ##### Keep only probes with variance > 0 across all samples
-  rsd <- apply(expData,1,sd)
+  rsd <- apply(expData.subset,1,sd)
   expData <- expData.subset[rsd>0,]
 
   ##### Assign colours according to defined sample annotation
@@ -175,29 +142,38 @@ for (j in 1:length(exp_files)) {
 
   ##### Save the box-plot as html (PLOTLY)
   widget_fn = paste(outFolder,paste0("pca_bp","_",j,".html"),sep="/")
-  htmlwidgets::saveWidget(p, file=widget_fn)
+  htmlwidgets::saveWidget(p, file=widget_fn, selfcontained = FALSE)
 
   ##### Generate PCA plot (PLOTLY)
-  ##### Prepare data frame
+  ##### Prepare legend coordinates
+ if ( length(unique(targets)) > 6 ) {
 
+    leg.orientation <- "v"
+    leg.y <- 0.9
+ } else {
+    leg.orientation <- "h"
+    leg.y <- 1.1
+ }
+
+  ##### Prepare data frame
   expData_pca.df <- data.frame(targets, expData_pca$x[,PC1], expData_pca$x[,PC2], expData_pca$x[,PC3])
   colnames(expData_pca.df) <- c("Target", "PC1", "PC2", "PC3")
   rownames(expData_pca.df) <- subset(annData, File_name %in% colnames(expData))[,"File_name"]
 
   p <- plot_ly(expData_pca.df, x = ~PC1, y = ~PC2, color = ~Target, text=rownames(expData_pca.df), colors = targets.colour[[1]], type='scatter', mode = "markers", marker = list(size=10, symbol="circle"), width = 800, height = 600) %>%
-  layout(title = "", xaxis = list(title = paste("PC ", PC1, " (",importance_pca[PC1],")",sep="")), yaxis = list(title = paste("PC ", PC2, " (",importance_pca[PC2],")",sep="")), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'h', y = 1.1))
+  layout(title = "", xaxis = list(title = paste("PC ", PC1, " (",importance_pca[PC1],")",sep="")), yaxis = list(title = paste("PC ", PC2, " (",importance_pca[PC2],")",sep="")), margin = list(l=50, r=50, b=50, t=20, pad=4), autosize = F, showlegend = TRUE, legend = list(orientation = leg.orientation, y = leg.y))
 
   widget_fn = paste(outFolder,paste0("pca_2d","_",j,".html"),sep="/")
   ##### Save the box-plot as html (PLOTLY)
-  htmlwidgets::saveWidget(p, file=widget_fn)
+  htmlwidgets::saveWidget(p, file=widget_fn, selfcontained = FALSE)
 
   ##### Generate PCA 3-D plot (PLOTLY)
   p <- plot_ly(expData_pca.df, x = ~PC1, y = ~PC2, z = ~PC3, color = ~Target, text=rownames(expData_pca.df), colors = targets.colour[[1]], type='scatter3d', mode = "markers", marker = list(size=8, symbol="circle"), width = 800, height = 800) %>%
-  layout(scene = list(xaxis = list(title = paste("PC ", PC1, " (",importance_pca[PC1],")",sep="")), yaxis = list(title = paste("PC ", PC2, " (",importance_pca[PC2],")",sep="")), zaxis = list(title = paste("PC ", PC3, " (",importance_pca[PC3],")",sep="")) ), margin = list(l=50, r=50, b=50, t=50, pad=4), autosize = F, legend = list(orientation = 'h', y = 1.1))
+  layout(scene = list(xaxis = list(title = paste("PC ", PC1, " (",importance_pca[PC1],")",sep="")), yaxis = list(title = paste("PC ", PC2, " (",importance_pca[PC2],")",sep="")), zaxis = list(title = paste("PC ", PC3, " (",importance_pca[PC3],")",sep="")) ), margin = list(l=50, r=50, b=50, t=10, pad=4), autosize = F, showlegend = TRUE, legend = list(orientation = leg.orientation, y = leg.y))
 
   ##### Save the box-plot as html (PLOTLY)
   widget_fn = paste(outFolder,paste0("pca_3d","_",j,".html"),sep="/")
-  htmlwidgets::saveWidget(p, file=widget_fn)
+  htmlwidgets::saveWidget(p, file=widget_fn, selfcontained = FALSE)
 
   ##### Close any open graphics devices
   graphics.off()

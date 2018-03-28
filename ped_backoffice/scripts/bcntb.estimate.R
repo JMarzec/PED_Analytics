@@ -9,7 +9,7 @@
 
 ### PARAMETERS #######################################################
 current_dir <- getwd()
-suppressMessages(source(paste(current_dir,"scripts/bcntb.functions.R",sep = "/")))
+suppressMessages(source(paste(current_dir,"bcntb.functions.R",sep = "/")))
 suppressMessages(library(estimate))
 suppressMessages(library(optparse))
 
@@ -20,7 +20,9 @@ option_list = list(
   make_option(c("-e", "--exp_file"), action="store", default=NA, type='character',
               help="File containing experimental data"),
   make_option(c("-t", "--target"), action="store", default=NA, type='character',
-              help="Clinical data saved in tab-delimited format"),
+              help="Clinical data saved in tab-delimited format (file with indicated CANCER samples"),
+  make_option(c("-t2", "--target2"), action="store", default=NA, type='character',
+              help="Clinical data saved in tab-delimited format to which the estimate output is to be written"),
   make_option(c("-d", "--dir"), action="store", default=NA, type='character',
               help="Default directory")
 )
@@ -29,6 +31,8 @@ opt = parse_args(OptionParser(option_list=option_list))
 
 # loading sources
 ann.data <- read.table(file = opt$target, header = T, sep = "\t")
+ann.data$File_name <- make.names(ann.data$File_name)
+
 # splitting annotation data by category (cancer, normal, unknown)
 ann.data.splitted <- split(ann.data, ann.data$Target)
 exp_files = unlist(strsplit(opt$exp_file, ",")) # splitting exp_file string to retrieve all the identified samples
@@ -89,7 +93,11 @@ for (j in 1:length(exp_files)) {
   estimate.report.file = write.table(estimate.report, file = estimate.report.filename, sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
 
 #write out tumour purity to target file
-ann.data.updated <- merge(ann.data, tumor_purity_df, by.x = "File_name", all=TRUE)
+# loading the target file where the tumour purity will be added
+ann.data2 <- read.table(file = opt$target2, header = T, sep = "\t")
+ann.data2$File_name <- make.names(ann.data2$File_name)
+
+ann.data.updated <- merge(ann.data2, tumor_purity_df, by.x = "File_name", all=TRUE)
 #ann.data.updated <- ann.data.updated[c(2,1,3:ncol(ann.data.updated))]
 #print(ann.data.updated)
-write.table(ann.data.updated, file=opt$target, sep = '\t', col.names = TRUE, row.names = FALSE, quote = FALSE, eol = '\n')
+write.table(ann.data.updated, file=opt$target2, sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE, eol = "\n")

@@ -23,7 +23,7 @@
   // extracting just the ArrayExpress accession
   $ae_accessions = array();
   error_log("geo_folders: $ae_accessions", 0);
-   foreach ($geo_folders as &$gf) {
+  foreach ($geo_folders as &$gf) {
     $ae_accessions[] = explode("_", end(explode("/", $gf)))[0];
   }
 
@@ -31,7 +31,7 @@
   $features = "PMID, Title, Journal, Abstract, PubDate, Analysis";
   $pub_info_query = "SELECT $features";
   $pub_info_query.= " FROM $articles_table WHERE PMID=$pmid";
-  $query=mysqli_query($conn, $pub_info_query) or die("Sorry, cannot perform the query");
+  $query=mysqli_query($conn, $pub_info_query) or die("Sorry, cannot perform the query. Please make sure that you select study of interest from the panel list of publications above");
 
 echo "<div class=container id='literature'>
         <h1> Publication Details </h1>
@@ -84,116 +84,71 @@ echo "</div>
         // checking the type of analysis
         // the content of tabs is different for each analysis type
 
-        if ($pa == "Molecular classification") {
-          echo "<div id='$pa_web+$cont'>
-                  <div class='description'>
-                    <p class='pub_det'> The PAM50 single sample predictor model
-                        <sup><a href='https://www.ncbi.nlm.nih.gov/pubmed/19204204' target=null>1</a></sup>, assigns samples into intrinsic tumour types,
-                        with distinct transcriptomic signatures, based on the expression of key breast cancer-specific genes.
-                        These subgroups comprise the oestrogen receptor positive subtypes (Luminal A and Luminal B) and the oestrogen
-                        receptor negative subtypes (Basal-like, Her2-enriched and Normal breast-like).
-                        Here, we present the molecular subtype calls for all tumour samples.
-                    </p>
-                  </div>";
+        if ($pa == "Tumour purity") {
+         echo "<div id='$pa_web+$cont'>
+                 <div class='description'>
+                   <p class='pub_det'> Cancer samples frequently contain a small proportion of infiltrating stromal and immune cells that might not
+                       only confound the tumour signal in molecular analyses but may also have a role in tumourigenesis and progression.
+                       We apply an algorithm<sup><a href='https://www.ncbi.nlm.nih.gov/pubmed/24113773' target=null>1</a></sup> that infers the tumour purity and the presence of infiltrating stromal/immune cells from gene expression data.
+                       A tumour purity value between 0 and 1 is inferred from the calculated stromal score,
+                       immune score and estimate score. All of these values are presented as a scatterplot,
+                       with a breakdown of scores for each sample available in tabular format from the target file.
+                   </p>
+                 </div>";
 
-                  // checking if the file for the analysis is available
-                  chdir($result_directory);
-                  if (file_exists("pam50.html")) {
-                    echo "<div class='pam50_container'>
-                            <iframe class='results' src='$iframe_directory/pam50.html'></iframe>
-                          </div>";
-                  } else {
-                    echo "<h3> Sorry no analyses are available </h3>";
-                  }
+               // checking if the file for the analysis is available
+               if (file_exists("$result_directory/estimate.html")) {
+                 echo "<div class='estimate_container'>
+                         <iframe class='results' id='estimate' onload='resizeIframe(this)' scrolling='no' src='$iframe_directory/estimate.html'></iframe>
+                       </div>";
 
-          echo "</div>";
-        } elseif ($pa == "Receptor status") {
-          echo "<div id='$pa_web+$cont'>
-                  <div class='description'>
-                    <p class='pub_det'> Gaussian finite mixture modelling is implemented to define
-                        oestrogen (ER), progesterone (PR) and Her2 receptor status
-                        <sup><a href='https://www.ncbi.nlm.nih.gov/pubmed/27818791' target=null>1</a></sup>.
-                        Here, we present the receptor status of the samples based on the gene expression of ER, PR and Her2.
-                        These classifications are used to define triple negative samples.
-                    </p>
-                  </div>";
+                 // loading tumor purity datatable
+                 echo "<table id='Estimate$cont$pmid' class='table table-bordered results' cellspacing='0' width='100%'>
+                         <thead>
+                           <tr>
+                             <th>Sample name</th>
+                             <th>Specimen</th>
+                             <th>Tumour purity</th>
+                         </thead>
+                       </tbody>";
 
-                  // checking if the file for the analysis is available
-                  if (file_exists("$result_directory/mclust.html")) {
-                    echo "<div class='mclust_container'>
-                            <iframe class='results' src='$iframe_directory/mclust.html'></iframe>
-                          </div>";
-                  } else {
-                    echo "<h3> Sorry no analyses are available </h3>";
-                  }
+                 // loading javascript for the interaction table
 
-          echo "</div>";
-        } elseif ($pa == "Tumour purity") {
-          echo "<div id='$pa_web+$cont'>
-                  <div class='description'>
-                    <p class='pub_det'> Cancer samples frequently contain a small proportion of infiltrating stromal and immune cells that might not
-                        only confound the tumour signal in molecular analyses but may also have a role in tumourigenesis and progression.
-                        We apply an algorithm<sup><a href='https://www.ncbi.nlm.nih.gov/pubmed/24113773' target=null>1</a></sup> that infers the tumour purity and the presence of infiltrating stromal/immune cells from gene expression data.
-                        A tumour purity value between 0 and 1 is inferred from the calculated stromal score,
-                        immune score and estimate score. All of these values are presented as a scatterplot,
-                        with a breakdown of scores for each sample available in tabular format from the target file.
-                    </p>
-                  </div>";
 
-                // checking if the file for the analysis is available
-                if (file_exists("$result_directory/estimate.html")) {
-                  echo "<div class='estimate_container'>
-                          <iframe class='results' id='estimate' scrolling='no' src='$iframe_directory/estimate.html'></iframe>
-                        </div>";
-
-                  // loading tumor purity datatable
-                  echo "<table id='Estimate$cont$pmid' class='display'>
-                          <thead>
-                            <tr>
-                              <th>Sample name</th>
-                              <th>Specimen</th>
-                              <th>Tumour purity</th>
-                          </thead>
-                          <tfoot>
-                            <tr>
-                              <th>Sample name</th>
-                              <th>Specimen</th>
-                              <th>Tumour purity</th>
-                          </tfoot>
-                          <tbody>";
-
-                  // loading data about the tumour purity
-                  // removing first line
-                  fgetcsv($target_io, 1000, "\t");
-                  while (($target = fgetcsv($target_io, 1000, "\t")) !== FALSE) {
-                    $num_fields = count($target);
-
-                    echo "<tr>"; // opening column row
-                    // selecting indexes of interface_exists
-                    // 0 = Sample name, 2 = Specimen, 3 = Tumour Purity
-                    $indexes = array(0,2,3);
-                    foreach ($indexes as &$punt) {
-                      if ($punt == 3) { // we are managing the tumour purity number, we want to round it
-                        $tp = round($target[$punt]*100,2);
+                 // loading data about the tumour purity
+                 // opening connection to the target file and saving into an array
+                 $target_io = fopen("$result_directory/target.txt", "r");
+                 // saving headers into a variable
+                 $headers = fgetcsv($target_io, 1000, "\t");
+                 while (($target = fgetcsv($target_io, 1000, "\t")) !== FALSE) {
+                   $target = array_combine($headers, $target);
+                   echo "<tr>"; // opening column row
+                   // selecting indexes of interface_exists
+                   // 0 = Sample name, 2 = Specimen, 3 = Tumour Purity
+                   $fields = array("File_name","Target","TumorPurity");
+                   foreach ($fields as &$sf) {
+                     if ($sf == "TumorPurity") { // we are managing the tumour purity number, we want to round it
+                        $tp = round($target[$sf]*100,2); // round values to 2 digits
                         echo "<td>".$tp."</td>";
                       } else {
-                        echo "<td>".$target[$punt]."</td>";
+                        echo "<td>".$target[$sf]."</td>";
                       }
-                    }
-                    echo "</tr>"; // closing column row
-                  }
+                   }
+                   echo "</tr>"; // closing column row
+                 }
+                 fclose($target_io);
 
-                  // closing tumour purity table
-                  echo "    </tbody>
-                          </table>";
+                 // closing tumour purity table
+                 echo "    </tbody>
+                         </table>";
 
-                } else {
-                  echo "<h3> Sorry no analyses are available </h3>";
-                }
-          echo "</div>";
-          // loading javascript to load DataTable tumour purity
-          echo "<script> LoadEstimateDataTable(\"Estimate$cont$pmid\") </script>";
-        } elseif ($pa == "PCA") {
+               } else {
+                 echo "<h3> Sorry no analyses are available </h3>";
+               }
+         echo "</div>";
+         // loading javascript to load DataTable tumour purity
+         echo "<script> LoadDetailDataTable(\"Estimate$cont$pmid\", \"Estimate\") </script>";
+       } elseif ($pa == "PCA") {
           echo "<div id='$pa_web+$cont'>
                   <div class='description'>
                     <p class='pub_det'> Principal component analyses (PCA) transforms the data into a coordinate system and presenting it as an orthogonal projection.
@@ -228,11 +183,15 @@ echo "</div>
                     <br><br>
                     <h4> Please select a gene of interest </h4>
                     <br>
+                    <u class=\"note\"> Just the genes present in the specific study are listed and taken into account for the analysis! </u>
+                    <br><br>
                   </div>";
 
           // loading autocomplete text
           echo "<select id=\"ep$cont\"></select>
-                <button id=\"runep$cont\"> Run analysis </button>";
+                <button id=\"runep$cont\" class=\"run\"> Run analysis </button>";
+
+          echo "<div class='gea' id='gea'></div>";
 
           // loading graph container when result launched
           echo "<div class='expression_profile_container' id='GraphContainerEP_$pa_web'></div>";
@@ -245,7 +204,7 @@ echo "</div>
 
         echo "</div>";
 
-      } elseif ($pa == "Correlations") {
+      } elseif ($pa == "Expression correlations") {
           echo "<div id='$pa_web+$cont'>
                   <div class='description'>
                     <p class='pub_det'>
@@ -256,12 +215,18 @@ echo "</div>
                     <br><br>
                     <h4> Please select at least 2 genes of interest (max 50 genes)</h4>
                     <br>
+                    <u class=\"note\"> Just the genes present in the specific study are listed and taken into account for the analysis! </u>
+                    <br><br>
+                    <select multiple id=\"cea$cont\"></select>
+                    <br><br><br>
+                    <h4> ...or you can paste you gene list here (separated by any wide space character)</h4>
+                    <br><br>
+                    <textarea id=\"textcea$cont\" rows=\"3\" cols=\"80\"></textarea>
+                    <br>
+                    <button id=\"runcea$cont\" class=\"run\"> Run analysis </button>
                   </div>";
 
-            // loading autocomplete text
-            echo "<select multiple id=\"cea$cont\">
-                  </select>
-                  <button id=\"runcea$cont\"> Run analysis </button>";
+            echo "<div class='cea' id='cea'></div>";
 
             // loading graph container when result launched
             echo "<div class='coexpression_container' id='GraphContainerCEA_$pa_web'></div>";
@@ -274,59 +239,163 @@ echo "</div>
 
           echo "</div>";
 
-        } elseif ($pa == "Survival analysis") {
+        } elseif ($pa == "Gene networks") {
+            echo "<div id='$pa_web+$cont'>
+                    <div class='description'>
+                      <p class='pub_det'>
+                        Here we present an interactive tool to explore interactions among genes' products of interest.
+                      </p>
+                      <br><br>
+                      <table id=\"network_parameters_container\">
+                        <tr style=\"height:70px; vertical-align:top\">
+                          <td colspan=2>
+                            <h4> Please select the genes of interest </h4>
+                            <br>
+                            <u class=\"note\"> Just the genes present in the specific study are listed and taken into account for the analysis! </u>
+                            <br><br>
+                            <select multiple id=\"net$cont\"></select>
+                            <br><br>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <h4> Please select the interaction score threshold </h4>
+                            <br><br>
+                            <div id=\"mentha-score\"></div>
+                            <!-- loading threshold labels -->
+                            <input type=\"text\" id=\"min_thr_label\" readonly>
+                            <input type=\"text\" id=\"max_thr_label\" readonly>
+                          </td>
+                          <td>
+                            <button id=\"runnet$cont\" class=\"run\"> Run analysis </button>
+                          </td>
+                        </tr>
+                      </table>
+                      <!-- load legend div -->
+                      <div id='net_legend' title='Network legend' style='display:none'>
+                        <img src='../images/net_legend.svg'
+                      </div>
+                    </div>";
+
+              echo "<div class=\"net\" id=\"net\"></div>";
+
+              // loading graph container when result launched
+              echo "<div class='network_container' id='GraphContainerNET_$pa_web'>";
+                // initializing hidden value for random code (useful for changing graph later)
+                echo "<input type=\"hidden\" id=\"random_code\"/>";
+                echo "  <table>
+                          <tr>
+                            <h4> Speciments available in the dataset: </h4><br>";
+
+                        // loading multiple radio buttons according to the speciments into the target file
+                        $target_io = fopen("$result_directory/target.txt", "r");
+                        // initilizing array with speciments
+                        $all_specimens = array();
+                        // removing first line
+                        $headers = fgetcsv($target_io, 1000, "\t");
+                        while (($target = fgetcsv($target_io, 1000, "\t")) !== FALSE) {
+                          $target = array_combine($headers, $target);
+                          // here we change the target column to see if the dataset has been curated by Ema or not
+                          $all_specimens[] = $target["Target"];
+                        }
+                        fclose($target_io);
+                        // uniquing specimens
+                        $all_specimens = array_unique($all_specimens);
+
+                        // listing speciments
+                        $cont_specimen = 0;
+                        foreach ($all_specimens as &$specimen) {
+                          if ($cont_specimen==0) {
+                            echo "<td style=\"padding-right:10px;\"><input type=\"radio\" name=\"selector\" checked onclick=LoadNetworkGraph('".$cont_specimen."'); />".$specimen."</td>";
+                          } else {
+                            echo "<td style=\"padding-right:10px;\"><input type=\"radio\" name=\"selector\" style=\"margin-right:10px;\" onclick=LoadNetworkGraph('".$cont_specimen."'); />".$specimen."</td>";
+                          }
+                          $cont_specimen++;
+                        }
+
+
+                echo "    </tr>
+                        </table>";
+
+                // inserting legend for color nodes
+                echo "<br><br>
+                      <img src='../images/question_mark.png' onClick='LoadLegend()' style='width:30px; height:30px'/>";
+
+                echo "<iframe class='results' id='network_container' onload='resizeIframe(this);'></iframe>";
+
+                // loading table with interactions
+                echo "<table id='network_details' class='table table-bordered results' cellspacing='0' width='100%'>
+                        <thead>
+                          <tr>
+                            <th>Source Gene (SG)</th>
+                            <th>Expression SG</th>
+                            <th>Target Gene (TG)</th>
+                            <th>Expression TG</th>
+                            <th>PMIDs</th>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>";
+
+              echo "</div>";
+
+              // loading javascripts
+              echo "<script>LoadScoreSlider(\"mentha-score\")</script>";
+              echo "<script>LoadGeneSelector(\"net$cont\",\"$ae\",\"$pmid\", \"\")</script>";
+              echo "<script>LoadAnalysis(\"net$cont\",\"runnet$cont\",\"$ae\",\"$pmid\",\"gene_network\",\"0\")</script>";
+
+            echo "</div>
+                </div>";
+          } elseif ($pa == "Survival analysis") {
           echo "<div id='$pa_web+$cont'>
                   <div class='description'>
                     <p class='pub_det'>
-                      The relationship between gene(s) of interest and survival can be assessed.
+                      The relationship between gene of interest and survival can be assessed.
                       A univariate model is applied to the survival data and samples are assigned to risk groups
-                      based on the median dichotomisation of mRNA expression intensities of the selected gene(s).
-                      Relationships are presented as Kaplan Meier plots.
+                      based on the median dichotomisation of mRNA expression intensities of the selected gene.
+                      Relationships are presented as Kaplan-Meier plots.
                     </p>
-                    <br><br>
-                    <h4> Please select a gene of interest </h4>
-                    <br>
+                      <br><br>
+                      <h4> Please select a gene of interest </h4>
+                      <br>
+                      <u class=\"note\"> Just the genes present in the specific study are listed and taken into account for the analysis! </u>
+                      <br><br>
                   </div>";
 
                   // loading autocomplete text
-                  echo "<select id=\"surv$cont\">
-                        </select>
-                        <button id=\"runsurv$cont\"> Run analysis </button>";
+                  echo "<select id=\"surv$cont\"></select>
+                        <button id=\"runsurv$cont\" class=\"run\"> Run analysis </button>";
+
+                  echo "<div class='surv' id='surv'></div>";
 
                   // loading graph container when result launched
                   echo "<div class='survival_container' id='GraphContainerSURV_$pa_web'></div>";
 
-                  // checking if the file for the analysis is available
-                  if (file_exists("$result_directory/pca_bp_1.html")) {
                   //  echo "<center>
-                  //          <img src='$iframe_directory/KM_subtype.png'></iframe>
+                  //          <img src='$iframe_directory/KM_subtype.png'>
                   //        </center>";
-						echo "<iframe class='results' id='surv$cont"."_hm'></iframe>";
-						
-                          // loading javascripts
-                          // NB: Rplots start counting from 1 -- adding 1 to php $cont
-                          $plot_cont = $cont + 1;
-                          echo "<script>LoadGeneSelector(\"surv$cont\",\"$ae\",\"$pmid\", \"\")</script>";
-                          echo "<script>LoadAnalysis(\"surv$cont\",\"runsurv$cont\",\"$ae\",\"$pmid\",\"survival\",\"$plot_cont\")</script>";
+                  echo "<center>
+                        <iframe class='results' id='surv$cont"."_km'></iframe>
+                        </center>";
 
-
-                  } else {
-                    echo "<h3> Sorry no analyses are available </h3>";
-                  }
+                  // loading javascripts
+                  // NB: Rplots start counting from 1 -- adding 1 to php $cont
+                  $plot_cont = $cont + 1;
+                  echo "<script>LoadGeneSelector(\"surv$cont\",\"$ae\",\"$pmid\", \"\")</script>";
+                  echo "<script>LoadAnalysis(\"surv$cont\",\"runsurv$cont\",\"$ae\",\"$pmid\",\"survival\",\"$plot_cont\")</script>";
 
         echo "</div>";
-      echo "
-      </div>";
         }
-            echo "<script>LoadResultTabs($cont)</script>";
       }
       // Loading Javascript Functions
-      
+      echo "<script>LoadResultTabs($cont)</script>";
       $cont++;
-      // load javascript accordion
-      echo "<script>LoadResultAcc()</script>";
-echo "</div>";
+echo "</div>
+    </div>";
   }
-echo "</div>";
+echo "
+  </div>
+</div> ";
+echo "<script>LoadResultAcc()</script>";
 
 ?>

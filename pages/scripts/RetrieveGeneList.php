@@ -11,13 +11,29 @@ $query = strtoupper($_GET["q"]); // query for the search field
 
 // retrieving all the gene expression matrices inside the result directory
 if ($type_analysis == "ccle") {
-  $result_directory = "$absolute_root_dir/ped_backoffice/data/ccle/";
+  $result_directory = "$absolute_root_dir/ped_backoffice/data/ccle/norm_files/";
   chdir($result_directory);
-  $expr_files = glob("gene_exp.csv");
+  $expr_files = glob("gene_list_exp.txt"); // in this case the "gene_exp.csv" file is too much big to manage
+} elseif ($type_analysis == "ccle_cnv") {
+  $result_directory = "$absolute_root_dir/ped_backoffice/data/ccle/norm_files/";
+  chdir($result_directory);
+  $expr_files = glob("gene_list_cn.txt"); // in this case the "cn_chr_pos.csv" file is too much big to manage
+} elseif ($type_analysis == "el_ccle") {
+  $result_directory = "$absolute_root_dir/ped_backoffice/data/ccle/norm_files/";
+  chdir($result_directory);
+  $expr_files = glob("gene_list_exp_cn.txt"); // in this case the "cn_chr_pos.csv" file is too much big to manage
 } elseif ($type_analysis == "tcga") {
-  $result_directory = "$absolute_root_dir/ped_backoffice/data/tcga/";
+  $result_directory = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/";
   chdir($result_directory);
-  $expr_files = glob("gene_list.txt"); // in this case the "gene_exp.csv" file is too much big to manage
+  $expr_files = glob("gene_list_exp.txt"); // in this case the "gene_exp.csv" file is too much big to manage
+} elseif ($type_analysis == "el_tcga") {
+  $result_directory = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/";
+  chdir($result_directory);
+  $expr_files = glob("gene_list_exp_cn_binary.txt"); // in this case the "cn_binary_chr_pos.csv" file is too much big to manage
+} elseif ($type_analysis == "tcga_cnv") {
+  $result_directory = "$absolute_root_dir/ped_backoffice/data/tcga/norm_files/";
+  chdir($result_directory);
+  $expr_files = glob("gene_list_cn_binary.txt"); // in this case the "cn_binary_chr_pos.csv" file is too much big to manage
 } else {
   $result_directory = "$absolute_root_dir/ped_backoffice/data/$ae"."_"."$pmid/norm_files/";
   chdir($result_directory);

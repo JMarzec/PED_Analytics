@@ -20,43 +20,6 @@ graphics.off()
 #    Functions
 #===============================================================================
 
-##### Deal with the duplicated genes
-duplGenes <- function(expData) {
-
-    genesList <- NULL
-    genesRepl <- NULL
-
-    for ( i in 1:nrow(expData) ) {
-
-        geneName <- expData[i,1]
-
-        ##### Distingish duplicated genes by adding duplicate number
-        if ( geneName %in% genesList ) {
-
-            ##### Report genes with more than one duplicates
-            if ( geneName %in% names(genesRepl) ) {
-
-                genesRepl[[ geneName ]] = genesRepl[[ geneName ]]+1
-
-                geneName <- paste(geneName, ".", genesRepl[[ geneName ]], sep="")
-
-            } else {
-                genesRepl[[ geneName ]] <- 2
-
-                geneName <- paste(geneName, ".2", sep="")
-            }
-        }
-        genesList <- c(genesList,geneName)
-    }
-
-    rownames(expData) <- genesList
-
-    ##### Remove the first column with gene names, which now are used as row names
-    expData <- expData[, -1]
-
-    return(expData)
-}
-
 # DICHOTOMISE EXPRESSION DATA BASED ON MEDIAN
 local.dichotomise.dataset <- function(x, split_at = 99999) {
   if (split_at == 99999) { split_at = median(x, na.rm = TRUE); }
@@ -99,11 +62,15 @@ hexcode <- opt$hexcode
 #    Main
 #===============================================================================
 
+gene = make.names(gene)
+
 # splitting exp_file string to retrieve all the identified samples
 exp_files = unlist(strsplit(expFile, ","))
 
 ##### Read sample annotation file
 annData <- read.table(annFile,sep="\t",as.is=TRUE,header=TRUE)
+annData$File_name <- make.names(annData$File_name)
+
 ##### Selecting samples where the survival statistics are available
 annData <- annData[ complete.cases(annData[ , "surv.stat" ]) , ];
 
@@ -117,14 +84,15 @@ for (j in 1:length(exp_files)) {
   expData <- read.table(ef,sep="\t",header=TRUE,row.names=NULL, stringsAsFactors = FALSE)
 
   ##### Deal with the duplicated genes
-  expData <- duplGenes(expData)
+  rownames(expData) = make.names(expData$Gene.name, unique=TRUE)
+  expData <- expData[,-1]
 
   #### Filtering expression data ###
   selected_samples <- intersect(as.character(annData$File_name),colnames(expData))
   expData.subset <- as.data.frame(t(scale(t(data.matrix(expData[,colnames(expData) %in% selected_samples])))))
   #exp.data.slimmed <- expData.subset[ , ann.data.slimmed$File_name ];
   exp.data.slimmed <- expData.subset
-  
+
   ##### Make sure that the annotation contains info only about samples in the data matrix
   ann.data.slimmed <- annData[ annData$File_name %in% colnames(expData.subset),  ]
 
@@ -158,14 +126,14 @@ for (j in 1:length(exp_files)) {
 
 
   png(filename=paste0(hexcode,"_KMplot.png"), width = 680, height = 680, units = "px", pointsize = 18)
-  plot(cox.km, mark.time=TRUE, col=c("darkblue", "red"), xlab="Survival time", ylab="Survival probability", lty=c(1,1), lwd=2.5, ylim=c(-0.1,1.13), xlim=c(0-min(cox.km$time)*2,max(cox.km$time)+min(cox.km$time)), xaxt="none")
+  plot(cox.km, mark.time=TRUE, col=c("darkblue", "red"), xlab="Survival time", ylab="Survival probability", lty=c(1,1), lwd=2.5, ylim=c(-0.1,1.13), xlim=c(0-((max(cox.km$time)-min(cox.km$time))/10),max(cox.km$time)+((max(cox.km$time)-min(cox.km$time))/10)), xaxt="none")
   axis(1, at=round(seq(0, max(cox.km$time), by = max(cox.km$time)/5), digits=1))
 
   ##### Report HR value (with 95% confidence intervals) and p-values
   legend("topright", legend=c(paste("HR=", round(cox.fit$conf.int[1,1], digits=2), sep=""), paste("95% CI (", round(cox.fit$conf.int[1,3], digits=2), "-", round(cox.fit$conf.int[1,4], digits=2), ")", sep=""), pValue), box.col="transparent", bg="transparent")
 
   ##### Report number at risk
-  legend("topleft", legend=c("Low risk", "High risk"), col=c("darkblue", "red"), lty=c(1,1), lwd=2.5, box.col="transparent", bg="transparent")
+  legend("topleft", legend=c("Low expression", "High expression"), col=c("darkblue", "red"), lty=c(1,1), lwd=2.5, box.col="transparent", bg="transparent")
   legend("bottom", legend="Number at risk\n\n\n\n", box.col="transparent", bg="transparent")
   text( risk.dataLow[2,], rep(-0.05, length(risk.dataLow[2,])), col="darkblue", labels=as.numeric(risk.dataLow[3,]))
   text( risk.dataHigh[2,], rep(-0.1, length(risk.dataHigh[2,])), col="red", labels=as.numeric(risk.dataHigh[3,]))
