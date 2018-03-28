@@ -28,17 +28,17 @@ The R scripts for running individual analysis are located in the following direc
 
 Script | Description | Dataset(s)
 ------------ | ------------ | ------------
-*[LiveGeneExpression.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveGeneExpression.R)* | Generates box-plots and bar-plots to visualise expression measurments across samples and groups for user-defined gene | PubMed TCGA CCLE
-*[LiveCoExpression.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveCoExpression.R)* | Calculates co-expression of user-defined genes across all samples or samples in user-defined group and presents correlation coefficients between samples as well as associated p-values in a form of correlation matrix heatmap | PubMed TCGA CCLE
-*[LiveSurvivalGene.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveSurvivalGene.R)* | Performs survival analysis for user-defined gene | PubMed TCGA
-*[LiveNetworkCreator.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveNetworkCreator.R)* | Script for generating interaction networks | PubMed TCGA CCLE
-*[LiveExprCN.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveExprCN.R)* | Generates box-plot and scatter-plot with expression data and copy-number data for user-defined gene on the Y and X axis, respectively. The samples are coloured based on the biological group from the target file | CCLE
-*[LiveExprCNMut.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveExprCNMut.R)* | Generates box-plot and scatter-plot with expression data and copy-number data for user-defined gene on the Y and X axis, respectively. The samples are coloured based on the mutation status of the corresponding gene | TCGA CCLE
-*[LiveCNAlterations.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveCNAlterations.R)* | Generates heatmap with copy-number status for user-defined genes across all samples. It uses a continuos copy-number data as input | CCLE
-*[LiveCNAlterations_binary.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveCNAlterations_binary.R)* | Generates heatmap with copy-number status for user-defined genes across all samples. It uses a binarised copy-number data (-2 = deletion, -1 = loss, 0 = diploid, 1 = gain, 2 = amplification) as input | TCGA
-*[LiveCNAlterations_annot_binary.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveCNAlterations_annot_binary.R)* | Generates heatmap with copy-number status for user-defined genes across all samples. It uses a binarised copy-number data (-2 = deletion, -1 = loss, 0 = diploid, 1 = gain, 2 = amplification) as input. The samples annotation is presented at the top of the heatmap | GENIE
-*[LiveMutFreq.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveMutFreq.R)* | Generates a horizontal bar-plot illustrating the frequency of various mutations for the user-defined gene | GENIE
-*[LiveFusionsFreq.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/pages/scripts/LiveFusionsFreq.R)* | Generates a horizontal bar-plot illustrating the frequency of various fusions for the user-defined gene | GENIE
+*[LiveGeneExpression.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveGeneExpression.R)* | Generates box-plots and bar-plots to visualise expression measurments across samples and groups for user-defined gene | PubMed TCGA CCLE
+*[LiveCoExpression.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveCoExpression.R)* | Calculates co-expression of user-defined genes across all samples or samples in user-defined group and presents correlation coefficients between samples as well as associated p-values in a form of correlation matrix heatmap | PubMed TCGA CCLE
+*[LiveSurvivalGene.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveSurvivalGene.R)* | Performs survival analysis for user-defined gene | PubMed TCGA
+*[LiveNetworkCreator.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveNetworkCreator.R)* | Script for generating interaction networks | PubMed TCGA CCLE
+*[LiveExprCN.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveExprCN.R)* | Generates box-plot and scatter-plot with expression data and copy-number data for user-defined gene on the Y and X axis, respectively. The samples are coloured based on the biological group from the target file | CCLE
+*[LiveExprCNMut.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveExprCNMut.R)* | Generates box-plot and scatter-plot with expression data and copy-number data for user-defined gene on the Y and X axis, respectively. The samples are coloured based on the mutation status of the corresponding gene | TCGA CCLE
+*[LiveCNAlterations.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveCNAlterations.R)* | Generates heatmap with copy-number status for user-defined genes across all samples. It uses a continuos copy-number data as input | CCLE
+*[LiveCNAlterations_binary.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveCNAlterations_binary.R)* | Generates heatmap with copy-number status for user-defined genes across all samples. It uses a binarised copy-number data (-2 = deletion, -1 = loss, 0 = diploid, 1 = gain, 2 = amplification) as input | TCGA
+*[LiveCNAlterations_annot_binary.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveCNAlterations_annot_binary.R)* | Generates heatmap with copy-number status for user-defined genes across all samples. It uses a binarised copy-number data (-2 = deletion, -1 = loss, 0 = diploid, 1 = gain, 2 = amplification) as input. The samples annotation is presented at the top of the heatmap | GENIE
+*[LiveMutFreq.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveMutFreq.R)* | Generates a horizontal bar-plot illustrating the frequency of various mutations for the user-defined gene | GENIE
+*[LiveFusionsFreq.R](https://github.com/JMarzec/PED_Analytics/tree/master/pages/scripts/LiveFusionsFreq.R)* | Generates a horizontal bar-plot illustrating the frequency of various fusions for the user-defined gene | GENIE
 <br />
 
 
@@ -82,7 +82,7 @@ We investigated the global gene expression in a large panel of pancreatic endocr
 <br>
 
 #### TCGA
-To populate TCGA table use the [*populate_tcga_db.py*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_tcga_db.py) script or [*populate_tcga_db_local.py*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_tcga_db_local.py) script, if executed on local machine rather than on the SNPnexus server (see [Update MySQL database using Stefano's script](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics#update-mysql-database-using-stefanos-script0) section). It reads the [*TCGA_PAAD_target_full.txt*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/various_scripts/TCGA_PAAD_target_full.txt) file with the samples annotations to be presented on on top of the TCGA tab in PED Analytics.
+To populate TCGA table use the [*populate_tcga_db.py*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_tcga_db.py) script or [*populate_tcga_db_local.py*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_tcga_db_local.py) script, if executed on local machine rather than on the SNPnexus server (see [Update MySQL database using Stefano's script](https://github.com/JMarzec/PED_Analytics#update-mysql-database-using-stefanos-script0) section). It reads the [*TCGA_PAAD_target_full.txt*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/various_scripts/TCGA_PAAD_target_full.txt) file with the samples annotations to be presented on on top of the TCGA tab in PED Analytics.
 ```
 cd /var/www/html/bioinf/ped_backoffice/various_scripts
 
@@ -91,21 +91,21 @@ populate_tcga_db.py --tcga TCGA_PAAD_target_full.txt
 <br>
 
 #### GENIE
-To populate GENIE table use the [*populate_genie_db_local.py*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_genie_db_local.py) script. It reads the *GENIE_target_full.txt* file with the samples annotations to be presented on on top of the GENIE tab.
+To populate GENIE table use the [*populate_genie_db_local.py*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_genie_db_local.py) script. It reads the *GENIE_target_full.txt* file with the samples annotations to be presented on on top of the GENIE tab.
 ```
 populate_genie_db.py --tcga GENIE_target_full.txt
 ```
 <br>
 
 #### CCLE
-To populate CCLE table use the [*populate_ccle_db.py*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_ccle_db.py) script or [*populate_ccle_db_local.py*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_ccle_db_local.py) script. It reads the *CCLE_PC_target_full.txt* file with the samples annotations to be presented on on top of the CCLE tab.
+To populate CCLE table use the [*populate_ccle_db.py*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_ccle_db.py) script or [*populate_ccle_db_local.py*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_ccle_db_local.py) script. It reads the *CCLE_PC_target_full.txt* file with the samples annotations to be presented on on top of the CCLE tab.
 ```
 populate_ccle_db.py --tcga CCLE_PC_target_full.txt
 ```
 <br>
 
 #### ICGC
-To populate ICGC table use the [*populate_icgc_db.py*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_icgc_db.py) script or [*populate_icgc_db_local.py*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_icgc_db_local.py) script. It reads the *ICGC_target_full.txt* file with the samples annotations to be presented on on top of the ICGC tab.
+To populate ICGC table use the [*populate_icgc_db.py*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_icgc_db.py) script or [*populate_icgc_db_local.py*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/various_scripts/populate_icgc_db_local.py) script. It reads the *ICGC_target_full.txt* file with the samples annotations to be presented on on top of the ICGC tab.
 ```
 populate_icgc_db.py --icgc ICGC_target_full.txt
 ```
@@ -152,7 +152,7 @@ mysql -u biomart -p ped_bioinf_portal < ped_bioinf_portal.sql
 <br>
 
 ### Add PubMed datasets manually
-The **datasets available in PED Analytics** are summarised in **[PC_datasets_transcriptomics_for_data_portal.xlsx](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/data/PC_datasets_transcriptomics_for_data_portal.xlsx)** spreadsheet.
+The **datasets available in PED Analytics** are summarised in **[PC_datasets_transcriptomics_for_data_portal.xlsx](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/data/PC_datasets_transcriptomics_for_data_portal.xlsx)** spreadsheet.
 
 
 Sometimes some datasets are not reported by SMAC, e.g. when the dataset in ArrayExpress or GEO is not linked with PubMed ID, or if the normalised data is missing, which is usually the case for RNA-seq studies. To add these studies to PED Analytics one needs to follow the steps below.
@@ -172,7 +172,7 @@ First, and the data with relevant folder structure, e.g.
  \-target.orig.txt
 ```
 
-1. Run ESTIMATE analysis scripts [*bcntb.estimate.R*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/scripts/bcntb.estimate.R) and [*bcntb.plotly.estimate.R*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/scripts/bcntb.plotly.estimate.R)
+1. Run ESTIMATE analysis scripts [*bcntb.estimate.R*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/scripts/bcntb.estimate.R) and [*bcntb.plotly.estimate.R*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/scripts/bcntb.plotly.estimate.R)
 ```
 cd /var/www/html/bioinf/ped_backoffice/scripts
 
@@ -182,7 +182,7 @@ Rscript bcntb.plotly.estimate.R --report /var/www/html/bioinf/ped_backoffice/dat
 ```
 <br>
 
-2. Run PCA analysis script [*bcntb.pca.R*](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/scripts/bcntb.pca.R)
+2. Run PCA analysis script [*bcntb.pca.R*](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/scripts/bcntb.pca.R)
 ```
 Rscript bcntb.pca.R --exp_file 73514_1.processed.genename.csv --target /var/www/html/bioinf/ped_backoffice/data/E-GEOD-73514_26446169/target.txt --colouring Target --principal_component 1 --dir /var/www/html/bioinf/ped_backoffice/data/E-GEOD-73514_26446169
 ```
@@ -218,7 +218,7 @@ mysql -u snp -p ped_bioinf_portal < ped_bioinf_portal.sql
 ```
 <br>
 
-*Note*: Sometimes the expression data is provided as one file per sample rather than as an expression matrix (e.g. dataset *E-GEOD-71729*). This is usually the case of datasets. To merge these files into one matrix use [merge_samples2matrix.R](https://github.research.its.qmul.ac.uk/hfw456/PED_Analytics/tree/master/ped_backoffice/data/merge_samples2matrix.R) script, e.g.
+*Note*: Sometimes the expression data is provided as one file per sample rather than as an expression matrix (e.g. dataset *E-GEOD-71729*). This is usually the case of datasets. To merge these files into one matrix use [merge_samples2matrix.R](https://github.com/JMarzec/PED_Analytics/tree/master/ped_backoffice/data/merge_samples2matrix.R) script, e.g.
 ```
 cd /var/www/html/bioinf/ped_backoffice/data
 Rscript merge_samples2matrix.R --inDir E-GEOD-71729_26343385/norm_files --outFile E-GEOD-71729.merged.txt
