@@ -235,3 +235,6 @@ Rscript merge_samples2matrix.R --inDir E-GEOD-71729_26343385/norm_files --outFil
 - Fix the mutations categories in GENIE mutation profiling analysis. Sometimes the mutations category have inverted names, e.g. for *TP53* there are *Nonsense & Missense* as well as *Missense & Nonsense* mutation categories, which is probably due multiple mutation types in that gene occurring in different order in various patients
 - Implement a pop-up window for selected plots so that they are expanded and full view is available for download (in png format)
 - Investigate the best cut-off threshold for presenting the CIRCOS plots (liaise with Dayem)
+- Add option to download a subset of expression data (for selected genes)
+- Add feature allowing to vies the expression profiles for multiple genes (e.g. in a form of a heatmap)
+- Add co-expression analysis separately for various biological groups (currently available for the whole dataset)
